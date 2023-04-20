@@ -2,7 +2,6 @@ import axios from 'axios';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import { readAllFilenames } from './lib/file';
 
 export default function Home({ fileNames }) {
   const [fileUpload, setFileUpload] = useState(null);
@@ -29,9 +28,9 @@ export default function Home({ fileNames }) {
       });
   };
 
-  const handleDeleleEvent = (fileName) => {
+  const handleDeleleEvent = (ipAddress, fileName) => {
     axios
-      .delete('/api/delete', {
+      .delete(`http://${ipAddress}/api/delete`, {
         data: {
           fileName,
         },
@@ -45,11 +44,14 @@ export default function Home({ fileNames }) {
       });
   };
 
-  const handleUpdateFilenames = () => {
+  const handleUpdateFilenames = async () => {
     axios
       .get('/api/read')
       .then(({ data }) => {
-        setRenderedFilenames(data);
+        setRenderedFilenames((olđData) => ({
+          ...olđData,
+          '192.168.1.4:3000': data,
+        }));
       })
       .catch((error) => {
         console.error(error);
@@ -66,18 +68,8 @@ export default function Home({ fileNames }) {
           <h1 className="font-bold text-2xl">Distributed Storage</h1>
         </Link>
 
-        <div className="w-full my-8">
-          <a
-            href="/storage/1920x1080-someday-or-oneday.jpg"
-            target="_blank"
-            className="px-4 py-1 ml-4 border border-solid border-gray-400"
-          >
-            Download
-          </a>
-        </div>
-
-        <ul className="w-full mt-8 flex flex-col gap-4">
-          {renderedFilenames.map((fileName) => (
+        <div className="w-full mt-8 flex flex-row gap-8">
+          {/* {renderedFilenames.map((fileName) => (
             <li key={fileName} className="flex gap-8 items-center">
               <a href={`/api/download/${fileName}`} target="_blank">
                 <span>{fileName}</span>
@@ -89,8 +81,26 @@ export default function Home({ fileNames }) {
                 Delete
               </button>
             </li>
+          ))} */}
+          {Object.keys(renderedFilenames).map((item) => (
+            <div key={item}>
+              <h1 className="font-bold">{item}</h1>
+              {renderedFilenames[item].map((fileName) => (
+                <li key={fileName} className="flex gap-8 items-center">
+                  <a href={`http://${item}/api/download/${fileName}`} target="_blank">
+                    <span>{fileName}</span>
+                  </a>
+                  <button
+                    onClick={() => handleDeleleEvent(item, fileName)}
+                    className="px-4 py-1 ml-4 border border-solid border-red-400 text-red-500"
+                  >
+                    Delete
+                  </button>
+                </li>
+              ))}
+            </div>
           ))}
-        </ul>
+        </div>
 
         <form ref={formRef} className="mt-8" onSubmit={handleUploadEvent}>
           <input
@@ -107,10 +117,14 @@ export default function Home({ fileNames }) {
 }
 
 export async function getStaticProps() {
-  const fileNames = await readAllFilenames();
+  const localFileNames = await axios.get('http://192.168.1.4:3000/api/read');
+  const fileNames = await axios.get('http://54.254.236.159/api/read');
   return {
     props: {
-      fileNames: fileNames,
+      fileNames: {
+        '192.168.1.4:3000': localFileNames.data || [],
+        '54.254.236.159': fileNames.data || [],
+      },
     },
   };
 }

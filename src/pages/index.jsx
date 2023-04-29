@@ -83,7 +83,7 @@ export default function Home({ fileNames }) {
             </li>
           ))} */}
           {Object.keys(renderedFilenames).map((item) => (
-            <div key={item}>
+            <div key={item} className="flex flex-col gap-4">
               <h1 className="font-bold">{item}</h1>
               {renderedFilenames[item].map((fileName) => (
                 <li key={fileName} className="flex gap-8 items-center">
@@ -117,12 +117,12 @@ export default function Home({ fileNames }) {
 }
 
 export async function getStaticProps() {
-  const localFileNames = await axios.get('http://192.168.1.4:3000/api/read');
+  // const localFileNames = await axios.get('http://192.168.1.7:3000/api/read');
   const fileNames = await axios.get('http://54.254.236.159/api/read');
   return {
     props: {
       fileNames: {
-        '192.168.1.4:3000': localFileNames.data || [],
+        // '192.168.1.7:3000': localFileNames.data || [],
         '54.254.236.159': fileNames.data || [],
       },
     },

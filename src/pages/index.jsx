@@ -45,17 +45,12 @@ export default function Home({ fileNames }) {
   };
 
   const handleUpdateFilenames = async () => {
-    axios
-      .get('/api/read')
-      .then(({ data }) => {
-        setRenderedFilenames((olđData) => ({
-          ...olđData,
-          '192.168.1.4:3000': data,
-        }));
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    const server1 = await axios.get('http://54.254.236.159/api/read');
+    const server2 = await axios.get('http://3.0.98.141/api/read');
+    setRenderedFilenames({
+      '54.254.236.159': server1.data || [],
+      '3.0.98.141': server2.data || [],
+    });
   };
 
   return (
@@ -118,12 +113,14 @@ export default function Home({ fileNames }) {
 
 export async function getStaticProps() {
   // const localFileNames = await axios.get('http://192.168.1.7:3000/api/read');
-  const fileNames = await axios.get('http://54.254.236.159/api/read');
+  const server1 = await axios.get('http://54.254.236.159/api/read');
+  const server2 = await axios.get('http://3.0.98.141/api/read');
   return {
     props: {
       fileNames: {
         // '192.168.1.7:3000': localFileNames.data || [],
-        '54.254.236.159': fileNames.data || [],
+        '54.254.236.159': server1.data || [],
+        '3.0.98.141': server2.data || [],
       },
     },
   };

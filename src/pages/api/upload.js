@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import NextCors from 'nextjs-cors';
 import path from 'path';
 import { readFile } from '../lib/file';
 
@@ -11,6 +12,12 @@ export const config = {
 };
 
 export default async function handler(req, res) {
+  await NextCors(req, res, {
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: '*',
+    optionsSuccessStatus: 200,
+  });
+
   try {
     await fs.readdir(storagePath);
   } catch (error) {

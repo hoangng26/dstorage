@@ -1,5 +1,5 @@
 import NextCors from 'nextjs-cors';
-import { readAllFilenames } from '../lib/file';
+import { readAllFilenames } from '../../lib/file';
 
 export default async function handler(req, res, next) {
   await NextCors(req, res, {

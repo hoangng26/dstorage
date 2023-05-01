@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import NextCors from 'nextjs-cors';
 import path from 'path';
-import { readFile } from '../lib/file';
+import { readFile } from '../../lib/file';
 
 const storagePath = path.join(process.cwd(), 'storage');
 

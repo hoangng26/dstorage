@@ -1,3 +1,4 @@
+import servers from '@/static/servers';
 import axios from 'axios';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -5,19 +6,20 @@ import { useRef, useState } from 'react';
 
 export default function Home({ fileNames }) {
   const [fileUpload, setFileUpload] = useState(null);
+  const [serverUpload, setServerUpload] = useState('');
   const [renderedFilenames, setRenderedFilenames] = useState(fileNames);
   const formRef = useRef();
 
   const handleUploadEvent = (event) => {
     event.preventDefault();
-    if (!fileUpload) {
+    if (!fileUpload || !serverUpload) {
       return;
     }
     const data = new FormData();
     data.append('file', fileUpload);
 
     axios
-      .post('/api/upload', data)
+      .post(`http://${serverUpload}/api/upload`, data)
       .then((response) => {
         console.log(response);
         handleUpdateFilenames();
@@ -45,12 +47,12 @@ export default function Home({ fileNames }) {
   };
 
   const handleUpdateFilenames = async () => {
-    const server1 = await axios.get('http://54.254.236.159/api/read');
-    const server2 = await axios.get('http://3.0.98.141/api/read');
-    setRenderedFilenames({
-      '54.254.236.159': server1.data || [],
-      '3.0.98.141': server2.data || [],
-    });
+    const fileNames = {};
+    for (let server of servers) {
+      let response = await axios.get(`http://${server}/api/read`);
+      fileNames[server] = response.data || [];
+    }
+    setRenderedFilenames(fileNames);
   };
 
   return (
@@ -64,19 +66,6 @@ export default function Home({ fileNames }) {
         </Link>
 
         <div className="w-full mt-8 flex flex-row gap-8">
-          {/* {renderedFilenames.map((fileName) => (
-            <li key={fileName} className="flex gap-8 items-center">
-              <a href={`/api/download/${fileName}`} target="_blank">
-                <span>{fileName}</span>
-              </a>
-              <button
-                onClick={() => handleDeleleEvent(fileName)}
-                className="px-4 py-1 ml-4 border border-solid border-red-400 text-red-500"
-              >
-                Delete
-              </button>
-            </li>
-          ))} */}
           {Object.keys(renderedFilenames).map((item) => (
             <div key={item} className="flex flex-col gap-4">
               <h1 className="font-bold">{item}</h1>
@@ -98,6 +87,24 @@ export default function Home({ fileNames }) {
         </div>
 
         <form ref={formRef} className="mt-8" onSubmit={handleUploadEvent}>
+          <div className="mb-4">
+            <label htmlFor="server">Choose a server:</label>
+            <select
+              name="server"
+              id="server"
+              className="border border-black ml-4"
+              onChange={(event) => setServerUpload(event.target.value)}
+            >
+              <option value="" selected hidden>
+                Choose a server
+              </option>
+              {servers.map((server, index) => (
+                <option key={`server-${index}`} value={server}>
+                  {server}
+                </option>
+              ))}
+            </select>
+          </div>
           <input
             type="file"
             name="file-upload"
@@ -112,16 +119,14 @@ export default function Home({ fileNames }) {
 }
 
 export async function getStaticProps() {
-  // const localFileNames = await axios.get('http://192.168.1.7:3000/api/read');
-  const server1 = await axios.get('http://54.254.236.159/api/read');
-  const server2 = await axios.get('http://3.0.98.141/api/read');
+  const fileNames = {};
+  for (let server of servers) {
+    let response = await axios.get(`http://${server}/api/read`);
+    fileNames[server] = response.data || [];
+  }
   return {
     props: {
-      fileNames: {
-        // '192.168.1.7:3000': localFileNames.data || [],
-        '54.254.236.159': server1.data || [],
-        '3.0.98.141': server2.data || [],
-      },
+      fileNames,
     },
   };
 }

@@ -1,25 +1,38 @@
 import servers from '@/static/servers';
+import {
+  CloudServerOutlined,
+  FileFilled,
+  FileImageFilled,
+  FilePdfFilled,
+  FileWordFilled,
+  UserOutlined,
+} from '@ant-design/icons';
+import { Avatar, Button, Input, Layout, Menu, Modal } from 'antd';
 import axios from 'axios';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 
+const { Header, Sider, Content, Footer } = Layout;
+
 export default function Home({ fileNames }) {
   const [fileUpload, setFileUpload] = useState(null);
-  const [serverUpload, setServerUpload] = useState('');
+  const [selectedServer, setSelectedServer] = useState(servers[0]);
+
   const [renderedFilenames, setRenderedFilenames] = useState(fileNames);
+  const [showUpload, setShowUpload] = useState(false);
+
   const formRef = useRef();
 
-  const handleUploadEvent = (event) => {
-    event.preventDefault();
-    if (!fileUpload || !serverUpload) {
+  const handleUploadEvent = () => {
+    if (!fileUpload || !selectedServer) {
       return;
     }
     const data = new FormData();
     data.append('file', fileUpload);
 
     axios
-      .post(`http://${serverUpload}/api/upload`, data)
+      .post(`http://${selectedServer}/api/upload`, data)
       .then((response) => {
         console.log(response);
         handleUpdateFilenames();
@@ -28,6 +41,7 @@ export default function Home({ fileNames }) {
       .catch((error) => {
         console.error(error);
       });
+    setShowUpload(false);
   };
 
   const handleDeleleEvent = (ipAddress, fileName) => {
@@ -55,64 +69,112 @@ export default function Home({ fileNames }) {
     setRenderedFilenames(fileNames);
   };
 
+  const handleSelectServer = ({ key, keyPath, domEvent }) => {
+    setSelectedServer(key);
+  };
+
+  const getFileIcon = (fileName) => {
+    let extension = fileName.split('.').pop();
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+        return <FileImageFilled className="text-5xl text-green-500" />;
+      case 'doc':
+      case 'docx':
+        return <FileWordFilled className="text-5xl text-blue-500" />;
+      case 'pdf':
+        return <FilePdfFilled className="text-5xl text-red-500" />;
+      default:
+        return <FileFilled className="text-5xl" />;
+    }
+  };
+
   return (
     <>
       <Head>
         <title>Distributed Storage</title>
       </Head>
-      <main className="w-1/2 mx-auto">
-        <Link href="/">
-          <h1 className="font-bold text-2xl">Distributed Storage</h1>
-        </Link>
+      <main>
+        <Layout>
+          <Header className="h-16 bg-blue-500 flex items-center justify-between px-8 text-slate-50 absolute w-full">
+            <Link href="/">
+              <h1 className="font-bold text-2xl text-slate-50">Distributed Storage</h1>
+            </Link>
+            <Input.Search className="w-96 flex justify-center" placeholder="Search" size="large" />
+            <Avatar size="large" icon={<UserOutlined />} />
+          </Header>
 
-        <div className="w-full mt-8 flex flex-row gap-8">
-          {Object.keys(renderedFilenames).map((item) => (
-            <div key={item} className="flex flex-col gap-4">
-              <h1 className="font-bold">{item}</h1>
-              {renderedFilenames[item].map((fileName) => (
-                <li key={fileName} className="flex gap-8 items-center">
-                  <a href={`http://${item}/api/download/${fileName}`} target="_blank">
-                    <span>{fileName}</span>
-                  </a>
-                  <button
-                    onClick={() => handleDeleleEvent(item, fileName)}
-                    className="px-4 py-1 ml-4 border border-solid border-red-400 text-red-500"
+          <Layout className="h-screen pt-16">
+            <Sider className="bg-transparent">
+              <Menu
+                mode="inline"
+                defaultSelectedKeys={[selectedServer]}
+                defaultOpenKeys={[selectedServer]}
+                className="h-full"
+                onSelect={handleSelectServer}
+                items={servers.map((server, index) => {
+                  return {
+                    key: server,
+                    icon: <CloudServerOutlined />,
+                    label: `Server ${index + 1}`,
+                  };
+                })}
+              />
+            </Sider>
+
+            <Content className="px-8">
+              <div className="mt-8">
+                <div className="font-bold pb-4 text-xl">IP Address: {selectedServer}</div>
+                <Button type="primary" size="large" onClick={() => setShowUpload(!showUpload)}>
+                  Upload
+                </Button>
+              </div>
+
+              <Modal
+                title="Upload File"
+                open={showUpload}
+                onOk={handleUploadEvent}
+                onCancel={() => {
+                  formRef.current.reset();
+                  setShowUpload(false);
+                }}
+              >
+                <form ref={formRef} className="mt-8">
+                  <input
+                    type="file"
+                    name="file-upload"
+                    id="file-upload"
+                    onChange={(event) => setFileUpload(event.target.files[0])}
+                  />
+                </form>
+              </Modal>
+
+              <div className="w-full my-8 flex gap-8">
+                {renderedFilenames[selectedServer].map((fileName) => (
+                  <a
+                    href={`http://${selectedServer}/api/download/${fileName}`}
+                    target="_blank"
+                    key={fileName}
+                    className="flex gap-4 items-center border border-solid border-blue-200 rounded-xl w-fit p-4 hover:border-blue-400 hover:cursor-pointer"
+                    onContextMenu={(e) => console.log('Right click')}
                   >
-                    Delete
-                  </button>
-                </li>
-              ))}
-            </div>
-          ))}
-        </div>
-
-        <form ref={formRef} className="mt-8" onSubmit={handleUploadEvent}>
-          <div className="mb-4">
-            <label htmlFor="server">Choose a server:</label>
-            <select
-              name="server"
-              id="server"
-              className="border border-black ml-4"
-              onChange={(event) => setServerUpload(event.target.value)}
-            >
-              <option value="" selected hidden>
-                Choose a server
-              </option>
-              {servers.map((server, index) => (
-                <option key={`server-${index}`} value={server}>
-                  {server}
-                </option>
-              ))}
-            </select>
-          </div>
-          <input
-            type="file"
-            name="file-upload"
-            id="file-upload"
-            onChange={(event) => setFileUpload(event.target.files[0])}
-          />
-          <button className="px-4 py-1 ml-4 border border-solid border-gray-400">Submit</button>
-        </form>
+                    <span>{getFileIcon(fileName)}</span>
+                    <span>{fileName}</span>
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDeleleEvent(selectedServer, fileName);
+                      }}
+                      danger
+                    >
+                      Delete
+                    </Button>
+                  </a>
+                ))}
+              </div>
+            </Content>
+          </Layout>
+        </Layout>
       </main>
     </>
   );

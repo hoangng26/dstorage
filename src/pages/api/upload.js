@@ -8,6 +8,7 @@ const storagePath = path.join(process.cwd(), 'storage');
 export const config = {
   api: {
     bodyParser: false,
+    sizeLimit: false,
   },
 };
 
@@ -18,12 +19,18 @@ export default async function handler(req, res) {
     optionsSuccessStatus: 200,
   });
 
-  try {
-    await fs.readdir(storagePath);
-  } catch (error) {
-    await fs.mkdir(storagePath);
-  }
+  if (req.method === 'POST') {
+    try {
+      await fs.readdir(storagePath);
+    } catch (error) {
+      await fs.mkdir(storagePath);
+    }
 
-  await readFile(req);
-  res.json({ done: 'Ok' });
+    await readFile(req);
+    res.json({ done: 'Ok' });
+  } else {
+    res.status(404).json({
+      message: 'Method not allowed',
+    });
+  }
 }

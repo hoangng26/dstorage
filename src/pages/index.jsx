@@ -85,7 +85,7 @@ export default function Home({ fileNames }) {
       case 'pdf':
         return <FilePdfFilled className="text-5xl text-red-500" />;
       default:
-        return <FileFilled className="text-5xl" />;
+        return <FileFilled className="text-5xl text-blue-500" />;
     }
   };
 
@@ -151,14 +151,14 @@ export default function Home({ fileNames }) {
 
               <div className="w-full my-8 flex gap-8">
                 {renderedFilenames[selectedServer].map((fileName) => (
-                  <a
+                  <Button
                     href={`http://${selectedServer}/api/download/${fileName}`}
                     target="_blank"
                     key={fileName}
-                    className="flex gap-4 items-center border border-solid border-blue-200 rounded-xl w-fit p-4 hover:border-blue-400 hover:cursor-pointer"
+                    className="flex gap-4 items-center rounded-xl w-fit px-4 py-10"
+                    icon={getFileIcon(fileName)}
                     onContextMenu={(e) => console.log('Right click')}
                   >
-                    <span>{getFileIcon(fileName)}</span>
                     <span>{fileName}</span>
                     <Button
                       onClick={(e) => {
@@ -169,7 +169,7 @@ export default function Home({ fileNames }) {
                     >
                       Delete
                     </Button>
-                  </a>
+                  </Button>
                 ))}
               </div>
             </Content>

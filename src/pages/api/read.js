@@ -8,6 +8,12 @@ export default async function handler(req, res, next) {
     optionsSuccessStatus: 200,
   });
 
-  const fileNames = await readAllFilenames();
-  res.status(200).json(fileNames);
+  if (req.method === 'GET') {
+    const fileNames = await readAllFilenames();
+    res.status(200).json(fileNames);
+  } else {
+    res.status(404).json({
+      message: 'Method not allowed',
+    });
+  }
 }

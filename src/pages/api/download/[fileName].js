@@ -10,14 +10,26 @@ export const config = {
 };
 
 export default async function handler(req, res, next) {
-  const { fileName } = req.query;
-  const filePath = `${storagePath}/${fileName}`;
-  const stat = fs.statSync(filePath);
-
-  res.writeHead(200, {
-    'Content-Length': stat.size,
+  await NextCors(req, res, {
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: '*',
+    optionsSuccessStatus: 200,
   });
 
-  const readStream = fs.createReadStream(filePath);
-  readStream.pipe(res);
+  if (req.method === 'GET') {
+    const { fileName } = req.query;
+    const filePath = `${storagePath}/${fileName}`;
+    const stat = fs.statSync(filePath);
+
+    res.writeHead(200, {
+      'Content-Length': stat.size,
+    });
+
+    const readStream = fs.createReadStream(filePath);
+    readStream.pipe(res);
+  } else {
+    res.status(404).json({
+      message: 'Method not allowed',
+    });
+  }
 }

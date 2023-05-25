@@ -149,17 +149,17 @@ export default function Home({ activeServers, fileNames }) {
                 </form>
               </Modal>
 
-              <div className="w-full my-8 flex gap-8">
+              <div className="w-full my-8 flex gap-8 flex-wrap">
                 {renderedFilenames[selectedServer].map((fileName) => (
                   <Button
                     href={`http://${selectedServer}/api/download/${fileName}`}
                     target="_blank"
                     key={fileName}
-                    className="flex gap-4 items-center rounded-xl w-fit px-4 py-10"
+                    className="flex justify-between gap-4 items-center rounded-xl w-96 px-4 py-10"
                     icon={getFileIcon(fileName)}
                     onContextMenu={(e) => console.log('Right click')}
                   >
-                    <span>{fileName}</span>
+                    <span className="overflow-hidden text-ellipsis w-full text-left">{fileName}</span>
                     <Button
                       onClick={(e) => {
                         e.preventDefault();

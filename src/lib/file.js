@@ -2,11 +2,14 @@ import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
 
-const storagePath = path.join(process.cwd(), 'storage');
-
-export async function readAllFilenames() {
-  const fileNames = fs.readdirSync(storagePath);
-  return fileNames;
+export async function readAllFilenames(folder = '') {
+  const storagePath = path.join(process.cwd(), `storage/${folder}`);
+  try {
+    const fileNames = fs.readdirSync(storagePath);
+    return fileNames;
+  } catch (error) {
+    return null;
+  }
 }
 
 export async function readFile(req) {

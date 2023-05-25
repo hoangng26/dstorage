@@ -1,4 +1,4 @@
-import servers from '@/static/servers';
+import { getActiveServer, updateActiveServer } from '@/lib/servers';
 import {
   CloudServerOutlined,
   FileFilled,
@@ -15,9 +15,9 @@ import { useRef, useState } from 'react';
 
 const { Header, Sider, Content, Footer } = Layout;
 
-export default function Home({ fileNames }) {
+export default function Home({ activeServers, fileNames }) {
   const [fileUpload, setFileUpload] = useState(null);
-  const [selectedServer, setSelectedServer] = useState(servers[0]);
+  const [selectedServer, setSelectedServer] = useState(activeServers[0]);
 
   const [renderedFilenames, setRenderedFilenames] = useState(fileNames);
   const [showUpload, setShowUpload] = useState(false);
@@ -62,7 +62,7 @@ export default function Home({ fileNames }) {
 
   const handleUpdateFilenames = async () => {
     const fileNames = {};
-    for (let server of servers) {
+    for (let server of activeServers) {
       let response = await axios.get(`http://${server}/api/read`);
       fileNames[server] = response.data || [];
     }
@@ -112,7 +112,7 @@ export default function Home({ fileNames }) {
                 defaultOpenKeys={[selectedServer]}
                 className="h-full"
                 onSelect={handleSelectServer}
-                items={servers.map((server, index) => {
+                items={activeServers.map((server, index) => {
                   return {
                     key: server,
                     icon: <CloudServerOutlined />,
@@ -181,13 +181,16 @@ export default function Home({ fileNames }) {
 }
 
 export async function getStaticProps() {
+  await updateActiveServer();
+  const activeServers = getActiveServer().map((server) => server.address);
   const fileNames = {};
-  for (let server of servers) {
+  for (let server of activeServers) {
     let response = await axios.get(`http://${server}/api/read`);
     fileNames[server] = response.data || [];
   }
   return {
     props: {
+      activeServers,
       fileNames,
     },
   };

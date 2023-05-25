@@ -1,4 +1,5 @@
 import fs from 'fs';
+import NextCors from 'nextjs-cors';
 import path from 'path';
 
 const storagePath = path.join(process.cwd(), 'storage');

@@ -10,4 +10,8 @@ export default async function handler(req, res, next) {
   res.status(200).json({
     message: 'Server is running...',
   });
+
+  if (req.method === 'POST') {
+    console.log(req.body.ipAddress);
+  }
 }

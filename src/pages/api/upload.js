@@ -1,7 +1,8 @@
+import { saveUploadFile } from '@/lib/file';
+import formidable from 'formidable';
 import fs from 'fs/promises';
 import NextCors from 'nextjs-cors';
 import path from 'path';
-import { readFile } from '../../lib/file';
 
 const storagePath = path.join(process.cwd(), 'storage');
 
@@ -26,7 +27,11 @@ export default async function handler(req, res) {
       await fs.mkdir(storagePath);
     }
 
-    await readFile(req);
+    const form = new formidable.IncomingForm();
+    form.parse(req, async (err, fields, files) => {
+      await saveUploadFile(files.file, fields.server);
+    });
+
     res.json({ done: 'Ok' });
   } else {
     res.status(404).json({

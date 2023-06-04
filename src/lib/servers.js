@@ -19,7 +19,9 @@ export async function updateActiveServer() {
   const servers = await Promise.all(
     getAllServers().map(async (server) => {
       try {
-        const response = await axios.get(`http://${server.address}/api`);
+        const response = await axios.post(`http://${server.address}/api`, {
+          ipAddress: process.env.IP_ADDRESS,
+        });
         return {
           ...server,
           active: response.status === 200,

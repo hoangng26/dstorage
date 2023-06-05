@@ -1,16 +1,10 @@
+import ListFiles from '@/components/ListFiles';
+import ListServers from '@/components/ListServers';
+import Navbar from '@/components/Navbar';
 import { getActiveServer, updateActiveServer } from '@/lib/servers';
-import {
-  CloudServerOutlined,
-  FileFilled,
-  FileImageFilled,
-  FilePdfFilled,
-  FileWordFilled,
-  UserOutlined,
-} from '@ant-design/icons';
-import { Avatar, Button, Input, Layout, Menu, Modal } from 'antd';
+import { Button, Layout, Modal } from 'antd';
 import axios from 'axios';
 import Head from 'next/head';
-import Link from 'next/link';
 import { useRef, useState } from 'react';
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -35,7 +29,7 @@ export default function Home({ activeServers, fileNames }) {
       .post(`http://${selectedServer}/api/upload`, data)
       .then((response) => {
         console.log(response);
-        handleUpdateFilenames();
+        handleUpdateListFiles();
         formRef.current.reset();
       })
       .catch((error) => {
@@ -44,23 +38,7 @@ export default function Home({ activeServers, fileNames }) {
     setShowUpload(false);
   };
 
-  const handleDeleleEvent = (ipAddress, fileName) => {
-    axios
-      .delete(`http://${ipAddress}/api/delete`, {
-        data: {
-          fileName,
-        },
-      })
-      .then((response) => {
-        console.log(response.data);
-        handleUpdateFilenames();
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
-
-  const handleUpdateFilenames = async () => {
+  const handleUpdateListFiles = async () => {
     const fileNames = {};
     for (let server of activeServers) {
       let response = await axios.get(`http://${server}/api/read`);
@@ -73,22 +51,6 @@ export default function Home({ activeServers, fileNames }) {
     setSelectedServer(key);
   };
 
-  const getFileIcon = (fileName) => {
-    let extension = fileName.split('.').pop();
-    switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-        return <FileImageFilled className="text-5xl text-green-500" />;
-      case 'doc':
-      case 'docx':
-        return <FileWordFilled className="text-5xl text-blue-500" />;
-      case 'pdf':
-        return <FilePdfFilled className="text-5xl text-red-500" />;
-      default:
-        return <FileFilled className="text-5xl text-blue-500" />;
-    }
-  };
-
   return (
     <>
       <Head>
@@ -97,28 +59,15 @@ export default function Home({ activeServers, fileNames }) {
       <main>
         <Layout>
           <Header className="h-16 bg-blue-500 flex items-center justify-between px-8 text-slate-50 absolute w-full">
-            <Link href="/">
-              <h1 className="font-bold text-2xl text-slate-50">Distributed Storage</h1>
-            </Link>
-            <Input.Search className="w-96 flex justify-center" placeholder="Search" size="large" />
-            <Avatar size="large" icon={<UserOutlined />} />
+            <Navbar />
           </Header>
 
           <Layout className="h-screen pt-16">
             <Sider className="bg-transparent">
-              <Menu
-                mode="inline"
-                defaultSelectedKeys={[selectedServer]}
-                defaultOpenKeys={[selectedServer]}
-                className="h-full"
-                onSelect={handleSelectServer}
-                items={activeServers.map((server, index) => {
-                  return {
-                    key: server,
-                    icon: <CloudServerOutlined />,
-                    label: `Server ${index + 1}`,
-                  };
-                })}
+              <ListServers
+                activeServers={activeServers}
+                selectedServer={selectedServer}
+                onSelectServer={handleSelectServer}
               />
             </Sider>
 
@@ -149,29 +98,11 @@ export default function Home({ activeServers, fileNames }) {
                 </form>
               </Modal>
 
-              <div className="w-full my-8 flex gap-8 flex-wrap">
-                {renderedFilenames[selectedServer].map((fileName) => (
-                  <Button
-                    href={`http://${selectedServer}/api/download/${fileName}`}
-                    target="_blank"
-                    key={fileName}
-                    className="flex justify-between gap-4 items-center rounded-xl w-96 px-4 py-10"
-                    icon={getFileIcon(fileName)}
-                    onContextMenu={(e) => console.log('Right click')}
-                  >
-                    <span className="overflow-hidden text-ellipsis w-full text-left">{fileName}</span>
-                    <Button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleDeleleEvent(selectedServer, fileName);
-                      }}
-                      danger
-                    >
-                      Delete
-                    </Button>
-                  </Button>
-                ))}
-              </div>
+              <ListFiles
+                server={selectedServer}
+                listFiles={renderedFilenames[selectedServer]}
+                onUpdateListFiles={handleUpdateListFiles}
+              />
             </Content>
           </Layout>
         </Layout>

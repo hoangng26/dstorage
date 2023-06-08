@@ -1,6 +1,6 @@
 import { saveUploadFile } from '@/lib/file';
 import formidable from 'formidable';
-import fs from 'fs/promises';
+import fs from 'fs';
 import NextCors from 'nextjs-cors';
 import path from 'path';
 
@@ -9,7 +9,6 @@ const storagePath = path.join(process.cwd(), 'storage');
 export const config = {
   api: {
     bodyParser: false,
-    sizeLimit: false,
   },
 };
 
@@ -22,17 +21,22 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      await fs.readdir(storagePath);
+      await fs.readdirSync(storagePath);
     } catch (error) {
-      await fs.mkdir(storagePath);
+      await fs.mkdirSync(storagePath);
     }
 
-    const form = new formidable.IncomingForm();
-    form.parse(req, async (err, fields, files) => {
-      await saveUploadFile(files.file, fields.server);
+    return new Promise((resolve, reject) => {
+      const form = new formidable.IncomingForm();
+      form.parse(req, async (err, fields, files) => {
+        if (err) {
+          reject(err);
+        }
+        await saveUploadFile(files.file, fields.server);
+        res.json({ message: 'Ok' });
+        resolve({ fields, files });
+      });
     });
-
-    res.json({ done: 'Ok' });
   } else {
     res.status(404).json({
       message: 'Method not allowed',

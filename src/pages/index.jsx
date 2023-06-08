@@ -1,6 +1,7 @@
 import ListFiles from '@/components/ListFiles';
 import ListServers from '@/components/ListServers';
 import Navbar from '@/components/Navbar';
+import { getFilesOnServer } from '@/lib/file';
 import { getActiveServer, updateActiveServer } from '@/lib/servers';
 import { Button, Layout, Modal } from 'antd';
 import axios from 'axios';
@@ -31,6 +32,7 @@ export default function Home({ activeServers, fileNames }) {
         console.log(response);
         handleUpdateListFiles();
         formRef.current.reset();
+        setFileUpload(null);
       })
       .catch((error) => {
         console.error(error);
@@ -115,10 +117,11 @@ export async function getStaticProps() {
   await updateActiveServer();
   const activeServers = getActiveServer().map((server) => server.address);
   const fileNames = {};
+
   for (let server of activeServers) {
-    let response = await axios.get(`http://${server}/api/read`);
-    fileNames[server] = response.data || [];
+    fileNames[server] = await getFilesOnServer(server);
   }
+
   return {
     props: {
       activeServers,

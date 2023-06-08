@@ -1,3 +1,4 @@
+import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 
@@ -14,7 +15,7 @@ export async function readAllFilenames(folder = '') {
 }
 
 export async function saveUploadFile(file, server = '') {
-  const data = fs.readFileSync(file.filepath);
+  const data = await fs.readFileSync(file.filepath);
   const saveDirectory = path.join(storagePath, server);
 
   try {
@@ -23,7 +24,21 @@ export async function saveUploadFile(file, server = '') {
     await fs.mkdirSync(saveDirectory);
   }
 
-  fs.writeFileSync(`${saveDirectory}/${file.originalFilename}`, data);
+  await fs.writeFileSync(`${saveDirectory}/${file.originalFilename}`, data);
   await fs.unlinkSync(file.filepath);
   return;
+}
+
+export async function getFilesOnServer(server) {
+  try {
+    let response = await axios.get(`http://${server}/api/read`);
+    await fs.writeFileSync(
+      path.join(process.cwd(), `static/${server}.json`),
+      JSON.stringify(response.data, null, 2),
+      (error) => console.log(error),
+    );
+    return response.data;
+  } catch (error) {
+    return [];
+  }
 }

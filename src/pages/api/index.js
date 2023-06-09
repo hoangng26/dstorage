@@ -1,3 +1,4 @@
+import { fetchTemporaryFilesToServer, getTemporaryFilesOfServer } from '@/lib/file';
 import NextCors from 'nextjs-cors';
 
 export default async function handler(req, res, next) {
@@ -12,6 +13,11 @@ export default async function handler(req, res, next) {
   });
 
   if (req.method === 'POST') {
-    console.log(req.body.ipAddress);
+    const requestServer = req.body.ipAddress;
+    const temporaryFiles = await getTemporaryFilesOfServer(requestServer);
+    if (!temporaryFiles || temporaryFiles.length === 0) {
+      return;
+    }
+    fetchTemporaryFilesToServer(requestServer);
   }
 }

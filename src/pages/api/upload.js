@@ -21,9 +21,9 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      await fs.readdirSync(storagePath);
+      fs.readdirSync(storagePath);
     } catch (error) {
-      await fs.mkdirSync(storagePath);
+      fs.mkdirSync(storagePath);
     }
 
     return new Promise((resolve, reject) => {
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
         if (err) {
           reject(err);
         }
-        await saveUploadFile(files.file, fields.server);
+        await saveUploadFile(files.file, fields.server, fields.fileName);
         res.json({ message: 'Ok' });
         resolve({ fields, files });
       });

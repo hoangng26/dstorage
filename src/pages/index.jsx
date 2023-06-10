@@ -19,7 +19,7 @@ export default function Home({ servers, activeServers, fileNames }) {
 
   const formRef = useRef();
 
-  const handleUploadEvent = () => {
+  const handleUploadEvent = async () => {
     if (!fileUpload || !selectedServer) {
       return;
     }
@@ -27,7 +27,7 @@ export default function Home({ servers, activeServers, fileNames }) {
     data.append('file', fileUpload);
 
     if (activeServers.find((server) => server === selectedServer)) {
-      axios
+      await axios
         .post(`http://${selectedServer}/api/upload`, data)
         .then((response) => {
           console.log(response);
@@ -37,7 +37,7 @@ export default function Home({ servers, activeServers, fileNames }) {
         });
     } else {
       data.append('server', selectedServer);
-      axios
+      await axios
         .post(`/api/upload`, data)
         .then((response) => {
           console.log(response);

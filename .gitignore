@@ -36,3 +36,7 @@ yarn-error.log*
 
 # static files
 /static
+
+#package
+package-lock.json
+package.json

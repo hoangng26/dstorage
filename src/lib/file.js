@@ -119,7 +119,7 @@ export function createECBCTable() {
   for (let i = 0; i < ECBC_m - ECBC_r; i++) {
     let row = [];
     for (let j = 0; j < ECBC_n; j++) {
-      if (j >= tm || (j >= i * t && j < t * (i + ECBC_r + 1)))
+      if (j >= tm || (j >= i * ECBC_t && j < ECBC_t * (i + ECBC_r + 1)))
         row.push(1);
       else
         row.push(0);
@@ -130,7 +130,7 @@ export function createECBCTable() {
   for (let i = ECBC_m - ECBC_r; i < ECBC_m; i++) {
     let row = [];
     for (let j = 0; j < ECBC_n; j++) {
-      if (j >= t * i || j < t * (i + ECBC_r + 1 - ECBC_m))
+      if (j >= ECBC_t * i || j < ECBC_t * (i + ECBC_r + 1 - ECBC_m))
         row.push(1);
       else
         row.push(0);
@@ -151,8 +151,7 @@ export function getECBCTableFS() {
 
   for (let i = 0; i < ECBC_table.length; i++) {
     let row = ECBC_table[i].map((item, index) => item === 1 ? index : undefined).filter(item => item !== undefined);
-    if (ECBC_table[i][n] == 1)
-      table_fs.push(row);
+    table_fs.push(row);
   }
 
   return table_fs;
@@ -170,8 +169,7 @@ export function getECBCTableSF() {
 
   for (let i = 0; i < tmp_table.length; i++) {
     let row = tmp_table[i].map((item, index) => item === 1 ? index : undefined).filter(item => item !== undefined);
-    if (tmp_table[i][n] == 1)
-      table_sf.push(row);
+    table_sf.push(row);
   }
 
   return table_sf;

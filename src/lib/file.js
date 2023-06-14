@@ -185,6 +185,8 @@ export function getFilesFromServers_HopCroft_Karp(files) {
   const slen = originalServers.length;
   const copy_servers = copyServers(files);
 
+  let servers = [];
+
   for (let i = 0; i < slen; i++) {
     servers.push([]);
   }
@@ -196,7 +198,7 @@ export function getFilesFromServers_HopCroft_Karp(files) {
   // we get the list of server-file matching
   const g = new BipGraph(copy_servers.length, listoffiles.length);
   g.addEdgeList(copy_servers);
-  let servers = g.hopcroftKarp();
+  servers = g.hopcroftKarp();
   // console.log(`Size of maximum matching is ${g.hopcroftKarp()[0]}`);
   // console.log(`Matches: ${g.hopcroftKarp()[1]}`);
   // console.log(`Matches: ${g.hopcroftKarp()}`);

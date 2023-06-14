@@ -1,7 +1,8 @@
+import ListAllFiles from '@/components/ListAllFiles';
 import ListFiles from '@/components/ListFiles';
 import ListServers from '@/components/ListServers';
 import Navbar from '@/components/Navbar';
-import { getFilesOnServer } from '@/lib/file';
+import { getListFilesFromAllServer } from '@/lib/file';
 import { getActiveServer, getAllServers, updateActiveServer } from '@/lib/servers';
 import { Button, Layout, Modal } from 'antd';
 import axios from 'axios';
@@ -10,11 +11,14 @@ import { useRef, useState } from 'react';
 
 const { Header, Sider, Content, Footer } = Layout;
 
-export default function Home({ servers, activeServers, fileNames }) {
+export default function Home({ servers, activeServers, listServersSaveFiles, listFilesOnServers }) {
   const [fileUpload, setFileUpload] = useState(null);
   const [selectedServer, setSelectedServer] = useState(servers[0]);
+  const [showAllFile, setShowAllFile] = useState(true);
 
-  const [renderedFilenames, setRenderedFilenames] = useState(fileNames);
+  const [listServersState, setListServersState] = useState(listServersSaveFiles);
+  const [listFilesState, setListFilesState] = useState(listFilesOnServers);
+
   const [showUpload, setShowUpload] = useState(false);
 
   const formRef = useRef();
@@ -53,20 +57,20 @@ export default function Home({ servers, activeServers, fileNames }) {
   };
 
   const handleUpdateListFiles = async () => {
-    const fileNames = {};
-    for (let server of activeServers) {
-      let response = await axios.get(`http://${server}/api/read`);
-      fileNames[server] = response.data || [];
-    }
+    let { data } = await axios.get(`/api/get-all-files`);
+    const { listFiles, listServers } = data;
 
-    setRenderedFilenames((prevState) => ({
-      ...prevState,
-      ...fileNames,
-    }));
+    setListFilesState(listFiles);
+    setListServersState(listServers);
   };
 
   const handleSelectServer = ({ key, keyPath, domEvent }) => {
-    setSelectedServer(key);
+    if (keyPath[0]) {
+      setSelectedServer(key);
+      setShowAllFile(false);
+    } else {
+      setShowAllFile(true);
+    }
   };
 
   return (
@@ -82,45 +86,52 @@ export default function Home({ servers, activeServers, fileNames }) {
 
           <Layout className="h-screen pt-16">
             <Sider className="bg-transparent">
-              <ListServers
-                activeServers={servers}
-                selectedServer={selectedServer}
-                onSelectServer={handleSelectServer}
-              />
+              <ListServers servers={servers} onSelectServer={handleSelectServer} />
             </Sider>
 
             <Content className="px-8">
-              <div className="mt-8">
-                <div className="font-bold pb-4 text-xl">IP Address: {selectedServer}</div>
-                <Button type="primary" size="large" onClick={() => setShowUpload(!showUpload)}>
-                  Upload
-                </Button>
-              </div>
+              {!showAllFile && (
+                <>
+                  <div className="mt-8">
+                    <div className="font-bold pb-4 text-xl">IP Address: {selectedServer}</div>
+                    <Button type="primary" size="large" onClick={() => setShowUpload(!showUpload)}>
+                      Upload
+                    </Button>
+                  </div>
 
-              <Modal
-                title="Upload File"
-                open={showUpload}
-                onOk={handleUploadEvent}
-                onCancel={() => {
-                  formRef.current.reset();
-                  setShowUpload(false);
-                }}
-              >
-                <form ref={formRef} className="mt-8">
-                  <input
-                    type="file"
-                    name="file-upload"
-                    id="file-upload"
-                    onChange={(event) => setFileUpload(event.target.files[0])}
+                  <Modal
+                    title="Upload File"
+                    open={showUpload}
+                    onOk={handleUploadEvent}
+                    onCancel={() => {
+                      formRef.current.reset();
+                      setShowUpload(false);
+                    }}
+                  >
+                    <form ref={formRef} className="mt-8">
+                      <input
+                        type="file"
+                        name="file-upload"
+                        id="file-upload"
+                        onChange={(event) => setFileUpload(event.target.files[0])}
+                      />
+                    </form>
+                  </Modal>
+
+                  <ListFiles
+                    server={selectedServer}
+                    listFiles={listServersState[selectedServer]}
+                    onUpdateListFiles={handleUpdateListFiles}
                   />
-                </form>
-              </Modal>
-
-              <ListFiles
-                server={selectedServer}
-                listFiles={renderedFilenames[selectedServer]}
-                onUpdateListFiles={handleUpdateListFiles}
-              />
+                </>
+              )}
+              {showAllFile && (
+                <ListAllFiles
+                  listFiles={listFilesState}
+                  activeServers={activeServers}
+                  onUpdateListFiles={handleUpdateListFiles}
+                />
+              )}
             </Content>
           </Layout>
         </Layout>
@@ -133,17 +144,15 @@ export async function getStaticProps() {
   const servers = getAllServers().map((server) => server.address);
   await updateActiveServer();
   const activeServers = getActiveServer().map((server) => server.address);
-  const fileNames = {};
 
-  for (let server of servers) {
-    fileNames[server] = await getFilesOnServer(server);
-  }
+  const { listFilesOnServers, listServersSaveFiles } = await getListFilesFromAllServer();
 
   return {
     props: {
       servers,
       activeServers,
-      fileNames,
+      listServersSaveFiles,
+      listFilesOnServers,
     },
   };
 }

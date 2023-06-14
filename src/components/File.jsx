@@ -1,10 +1,10 @@
 import { Button } from 'antd';
 import FileIcon from './FileIcon';
 
-export default function File({ server, fileName, onDelete }) {
+export default function File({ server, fileName, onDelete, downloadLink }) {
   return (
     <Button
-      href={`http://${server}/api/download/${fileName}`}
+      href={downloadLink}
       target="_blank"
       key={fileName}
       className="flex justify-between gap-4 items-center rounded-xl w-96 px-4 py-10"

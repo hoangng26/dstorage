@@ -2,6 +2,7 @@ import axios from 'axios';
 import FormData from 'form-data';
 import fs from 'fs';
 import path from 'path';
+import { getAllServers } from './servers';
 
 const storagePath = path.join(process.cwd(), 'storage');
 
@@ -84,7 +85,7 @@ export async function fetchTemporaryFilesToServer(server) {
 
     await axios
       .post(`http://${server}/api/upload`, data)
-      .then((response) => { })
+      .then((response) => {})
       .catch((error) => {
         console.log(error);
       });
@@ -95,6 +96,38 @@ export async function fetchTemporaryFilesToServer(server) {
   fs.rmSync(temporaryFolderPath, { recursive: true, force: true });
 
   await getFilesOnServer(server);
+}
+
+export async function getListFilesFromAllServer() {
+  const servers = getAllServers().map((server) => server.address);
+  const listFilesOnServers = [];
+  const listServersSaveFiles = {};
+
+  for (let server of servers) {
+    const response = await getFilesOnServer(server);
+
+    response.forEach((fileName) => {
+      const checkIndex = listFilesOnServers.findIndex((file) => file.fileName === fileName);
+      if (checkIndex >= 0) {
+        listFilesOnServers[checkIndex].servers.push(server);
+        return;
+      }
+
+      listFilesOnServers.push({
+        fileName: fileName,
+        servers: [server],
+      });
+    });
+
+    listServersSaveFiles[server] = response;
+  }
+
+  listFilesOnServers.sort((a, b) => (a.fileName > b.fileName ? 1 : -1));
+
+  return {
+    listFilesOnServers,
+    listServersSaveFiles,
+  };
 }
 
 const ECBC_N = 42;
@@ -119,10 +152,8 @@ export function createECBCTable() {
   for (let i = 0; i < ECBC_m - ECBC_r; i++) {
     let row = [];
     for (let j = 0; j < ECBC_n; j++) {
-      if (j >= tm || (j >= i * ECBC_t && j < ECBC_t * (i + ECBC_r + 1)))
-        row.push(1);
-      else
-        row.push(0);
+      if (j >= tm || (j >= i * ECBC_t && j < ECBC_t * (i + ECBC_r + 1))) row.push(1);
+      else row.push(0);
     }
     table.push(row);
   }
@@ -130,10 +161,8 @@ export function createECBCTable() {
   for (let i = ECBC_m - ECBC_r; i < ECBC_m; i++) {
     let row = [];
     for (let j = 0; j < ECBC_n; j++) {
-      if (j >= ECBC_t * i || j < ECBC_t * (i + ECBC_r + 1 - ECBC_m))
-        row.push(1);
-      else
-        row.push(0);
+      if (j >= ECBC_t * i || j < ECBC_t * (i + ECBC_r + 1 - ECBC_m)) row.push(1);
+      else row.push(0);
     }
     table.push(row);
   }
@@ -150,7 +179,7 @@ export function getECBCTableFS() {
   let table_fs = [];
 
   for (let i = 0; i < ECBC_table.length; i++) {
-    let row = ECBC_table[i].map((item, index) => item === 1 ? index : undefined).filter(item => item !== undefined);
+    let row = ECBC_table[i].map((item, index) => (item === 1 ? index : undefined)).filter((item) => item !== undefined);
     table_fs.push(row);
   }
 
@@ -165,10 +194,10 @@ export function getECBCTableFS() {
 export function getECBCTableSF() {
   let table_sf = [];
 
-  const tmp_table = ECBC_table[0].map((_, colIndex) => ECBC_table.map(row => row[colIndex]));
+  const tmp_table = ECBC_table[0].map((_, colIndex) => ECBC_table.map((row) => row[colIndex]));
 
   for (let i = 0; i < tmp_table.length; i++) {
-    let row = tmp_table[i].map((item, index) => item === 1 ? index : undefined).filter(item => item !== undefined);
+    let row = tmp_table[i].map((item, index) => (item === 1 ? index : undefined)).filter((item) => item !== undefined);
     table_sf.push(row);
   }
 
@@ -203,7 +232,6 @@ export function getFilesFromServers_HopCroft_Karp(files) {
   // console.log(`Matches: ${g.hopcroftKarp()[1]}`);
   // console.log(`Matches: ${g.hopcroftKarp()}`);
 
-
   for (let i = 0; i < copy_servers.length; i++) {
     if (copy_servers[i].length > 0) {
       servers[i % slen].push(A[i][0]);
@@ -218,13 +246,13 @@ export function getFilesFromServers_HopCroft_Karp(files) {
 //  server[a] = [list of files that saved on server a]
 export function getServerFileList(files) {
   const table_sf = getECBCTableSF();
-  return table_sf.map(list => list.filter(element => files.includes(element)));
+  return table_sf.map((list) => list.filter((element) => files.includes(element)));
 }
 
 // input: list of files (mod ECBC_n)
 // output: number of copies
 export function findNumberOfCopy(serverfilelist) {
-  return Math.max(...serverfilelist.map(list => list.length));
+  return Math.max(...serverfilelist.map((list) => list.length));
 }
 
 // input: list of files
@@ -250,8 +278,7 @@ class BipGraph {
 
   addEdgeList(fslist) {
     for (let i = 0; i < fslist.length; i++) {
-      for (let j = 0; j < fslist[i].length; j++)
-        this.addEdge(i, fslist[i]);
+      for (let j = 0; j < fslist[i].length; j++) this.addEdge(i, fslist[i]);
     }
   }
 
@@ -309,8 +336,7 @@ class BipGraph {
           if (this.dfs(u)) {
             count++;
             if (count === this.__n) {
-              for (let i = 0; i < count; i++)
-                tmp.push([i, this.__pairU[i]]);
+              for (let i = 0; i < count; i++) tmp.push([i, this.__pairU[i]]);
             }
           }
       }

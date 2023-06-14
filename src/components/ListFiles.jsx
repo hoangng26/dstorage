@@ -21,7 +21,13 @@ export default function ListFiles({ server, listFiles, onUpdateListFiles }) {
   return (
     <div className="w-full my-8 flex gap-8 flex-wrap">
       {listFiles.map((fileName) => (
-        <File server={server} fileName={fileName} onDelete={handleDeleleEvent} key={fileName} />
+        <File
+          server={server}
+          fileName={fileName}
+          onDelete={handleDeleleEvent}
+          key={fileName}
+          downloadLink={`http://${server}/api/download/${fileName}`}
+        />
       ))}
     </div>
   );

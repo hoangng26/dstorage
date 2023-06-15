@@ -147,7 +147,7 @@ export async function getECBCParameters() {
   const ECBC_N = 42;
   const ECBC_n = listFiles.length + 1;
   // const ECBC_n = 1;
-  const ECBC_m = Object.keys(listServers).length - 1;
+  const ECBC_m = Object.keys(listServers).length;
   const ECBC_k = 13;
   const ECBC_r = 2;
   const ECBC_t = 3;

@@ -142,14 +142,27 @@ export async function getListFilesFromAllServers() {
   };
 }
 
-export async function createECBCTable() {
+export async function getECBCParameters() {
   const { listFilesOnServers: listFiles, listServersSaveFiles: listServers } = await getListFilesFromAllServers();
   const ECBC_N = 42;
-  const ECBC_n = listFiles.length;
+  const ECBC_n = listFiles.length + 1;
+  // const ECBC_n = 1;
   const ECBC_m = Object.keys(listServers).length - 1;
   const ECBC_k = 13;
   const ECBC_r = 2;
   const ECBC_t = 3;
+  return {
+    ECBC_N,
+    ECBC_n,
+    ECBC_m,
+    ECBC_k,
+    ECBC_r,
+    ECBC_t,
+  };
+}
+
+export async function createECBCTable() {
+  const { ECBC_N, ECBC_k, ECBC_m, ECBC_n, ECBC_r, ECBC_t } = await getECBCParameters();
 
   let table = [];
   const tm = ECBC_m * ECBC_t;

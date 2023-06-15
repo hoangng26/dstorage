@@ -1,7 +1,11 @@
+import { DeleteOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
+import { useState } from 'react';
 import FileIcon from './FileIcon';
 
 export default function File({ server, fileName, onDelete, downloadLink }) {
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   return (
     <Button
       href={downloadLink}
@@ -13,10 +17,14 @@ export default function File({ server, fileName, onDelete, downloadLink }) {
     >
       <span className="overflow-hidden text-ellipsis w-full text-left">{fileName}</span>
       <Button
-        onClick={(e) => {
+        onClick={async (e) => {
           e.preventDefault();
-          onDelete(server, fileName);
+          setDeleteLoading(true);
+          await onDelete(server, fileName);
+          setDeleteLoading(false);
         }}
+        icon={<DeleteOutlined />}
+        loading={deleteLoading}
         danger
       >
         Delete

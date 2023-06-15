@@ -2,8 +2,8 @@ import axios from 'axios';
 import File from './File';
 
 export default function ListFiles({ server, listFiles, onUpdateListFiles }) {
-  const handleDeleleEvent = (ipAddress, fileName) => {
-    axios
+  const handleDeleleEvent = async (ipAddress, fileName) => {
+    await axios
       .delete(`http://${ipAddress}/api/delete`, {
         data: {
           fileName,

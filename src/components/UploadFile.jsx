@@ -70,6 +70,9 @@ export default function UploadFile({ activeServers, onUpdateListFiles }) {
         }}
         onOk={handleUploadEvent}
         onCancel={() => {
+          if (buttonLoading) {
+            return;
+          }
           formRef.current.reset();
           setShowUpload(false);
         }}

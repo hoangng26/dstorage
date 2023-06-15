@@ -85,7 +85,7 @@ export async function fetchTemporaryFilesToServer(server) {
 
     await axios
       .post(`http://${server}/api/upload`, data)
-      .then((response) => {})
+      .then((response) => { })
       .catch((error) => {
         console.log(error);
       });
@@ -172,36 +172,34 @@ export function createECBCTable() {
 
 // input: none
 // output: return the ECBC_table in format list[list]
-//   tableFS[a] = [servers that save file a]
-//   0 <= a < ECBC_n
-// TODO: get the ECBC table, hash(filename, heading, content...) mod ECBC_n = x => file(x) saved to servers which table[x] = 1
-export function getECBCTableFS() {
-  let table_fs = [];
-
-  for (let i = 0; i < ECBC_table.length; i++) {
-    let row = ECBC_table[i].map((item, index) => (item === 1 ? index : undefined)).filter((item) => item !== undefined);
-    table_fs.push(row);
-  }
-
-  return table_fs;
-}
-
-// input: none
-// output: return the ECBC_table in format list[list]
 //   tableSF[b] = [files that saved on server b]
 //   0 <= b < ECBC_m
 // TODO: get the ECBC table, hash(filename, heading, content...) mod ECBC_n = x => file(x) saved to servers which table[x] = 1
 export function getECBCTableSF() {
   let table_sf = [];
 
-  const tmp_table = ECBC_table[0].map((_, colIndex) => ECBC_table.map((row) => row[colIndex]));
-
-  for (let i = 0; i < tmp_table.length; i++) {
-    let row = tmp_table[i].map((item, index) => (item === 1 ? index : undefined)).filter((item) => item !== undefined);
+  for (let i = 0; i < ECBC_table.length; i++) {
+    let row = ECBC_table[i].map((item, index) => (item === 1 ? index : undefined)).filter((item) => item !== undefined);
     table_sf.push(row);
   }
 
   return table_sf;
+}
+
+// input: none
+// output: return the ECBC_table in format list[list]
+//   tableFS[a] = [servers that save file a]
+//   0 <= a < ECBC_n
+// TODO: get the ECBC table, hash(filename, heading, content...) mod ECBC_n = x => file(x) saved to servers which table[x] = 1
+export function getECBCTableFS() {
+  let table_fs = [];
+
+  const tmp_table = ECBC_table[0].map((_, colIndex) => ECBC_table.map((row) => row[colIndex]));
+
+  for (let i = 0; i < tmp_table.length; i++) {
+    let row = tmp_table[i].map((item, index) => (item === 1 ? index : undefined)).filter((item) => item !== undefined);
+    table_fs.push(row);
+  }
 }
 
 // HopCroft - Karp Algorithm: return the list of files got from servers
@@ -220,12 +218,9 @@ export function getFilesFromServers_HopCroft_Karp(files) {
     servers.push([]);
   }
 
-  // get list of files
-  let listoffiles = [...new Set([].concat(...A))];
-
   // do the dfs bfs hopcroft karp thiny...
   // we get the list of server-file matching
-  const g = new BipGraph(copy_servers.length, listoffiles.length);
+  const g = new BipGraph(copy_servers.length, files.length);
   g.addEdgeList(copy_servers);
   servers = g.hopcroftKarp();
   // console.log(`Size of maximum matching is ${g.hopcroftKarp()[0]}`);
@@ -260,7 +255,11 @@ export function findNumberOfCopy(serverfilelist) {
 export function copyServers(files) {
   const originalServers = getServerFileList(files);
   const count = findNumberOfCopy(originalServers);
-  return Array[count].fill(...originalServers);
+  let rs = originalServers;
+  for (let i = 1; i < count; i++)
+    rs = rs.concat(originalServers);
+
+  return rs;
 }
 
 const INF = 2147483647;

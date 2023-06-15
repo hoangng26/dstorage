@@ -1,8 +1,8 @@
-import { getListFilesFromAllServer } from '@/lib/file';
+import { getListFilesFromAllServers } from '@/lib/file';
 
 export default async function handler(req, res, next) {
   try {
-    const { listFilesOnServers, listServersSaveFiles } = await getListFilesFromAllServer();
+    const { listFilesOnServers, listServersSaveFiles } = await getListFilesFromAllServers();
     res.status(200).json({
       listFiles: listFilesOnServers,
       listServers: listServersSaveFiles,

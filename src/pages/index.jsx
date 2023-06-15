@@ -2,7 +2,7 @@ import ListAllFiles from '@/components/ListAllFiles';
 import ListFiles from '@/components/ListFiles';
 import ListServers from '@/components/ListServers';
 import Navbar from '@/components/Navbar';
-import { getListFilesFromAllServer } from '@/lib/file';
+import { createECBCTable, getListFilesFromAllServers } from '@/lib/file';
 import { getActiveServer, getAllServers, updateActiveServer } from '@/lib/servers';
 import { Button, Layout, Modal } from 'antd';
 import axios from 'axios';
@@ -145,7 +145,12 @@ export async function getStaticProps() {
   await updateActiveServer();
   const activeServers = getActiveServer().map((server) => server.address);
 
-  const { listFilesOnServers, listServersSaveFiles } = await getListFilesFromAllServer();
+  const { listFilesOnServers, listServersSaveFiles } = await getListFilesFromAllServers();
+
+  const ECBC_table = await createECBCTable();
+  for (let item of ECBC_table) {
+    // console.log(...item);
+  }
 
   return {
     props: {

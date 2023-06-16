@@ -68,6 +68,8 @@ export function getECBCTableFS() {
     let row = tmp_table[i].map((item, index) => (item === 1 ? index : undefined)).filter((item) => item !== undefined);
     table_fs.push(row);
   }
+
+  return table_fs;
 }
 
 // HopCroft - Karp Algorithm: return the list of files got from servers
@@ -79,6 +81,7 @@ export function getFilesFromServers_HopCroft_Karp(files) {
   const originalServers = getServerFileList(files);
   const slen = originalServers.length;
   const copy_servers = copyServers(files);
+  // console.log(`Copy_servers:`, copy_servers);
 
   let servers = [];
 
@@ -90,14 +93,13 @@ export function getFilesFromServers_HopCroft_Karp(files) {
   // we get the list of server-file matching
   const g = new BipGraph(copy_servers.length, files.length);
   g.addEdgeList(copy_servers);
-  servers = g.hopcroftKarp();
-  // console.log(`Size of maximum matching is ${g.hopcroftKarp()[0]}`);
-  // console.log(`Matches: ${g.hopcroftKarp()[1]}`);
-  // console.log(`Matches: ${g.hopcroftKarp()}`);
+  let matchSF = g.hopcroftKarp();
+  // console.log(`Matches:`, matchSF);
+
 
   for (let i = 0; i < copy_servers.length; i++) {
-    if (copy_servers[i].length > 0) {
-      servers[i % slen].push(A[i][0]);
+    if (matchSF[i][1] > NIL) {
+      servers[i % slen].push(matchSF[i][1]);
     }
   }
 
@@ -136,15 +138,19 @@ class BipGraph {
     this.__m = m;
     this.__n = n;
     this.__adj = [...Array(m)].map(() => []);
+    this.__match = new Map();
+    this.countN = 0;
   }
 
   addEdge(u, v) {
-    this.__adj[u].push(v); // Add u to v’s list.
+    if (this.__match.has(v) === false)
+      this.__match.set(v, this.countN++);
+    this.__adj[u].push(this.__match.get(v)); // Add u to v’s list.
   }
 
   addEdgeList(fslist) {
     for (let i = 0; i < fslist.length; i++) {
-      for (let j = 0; j < fslist[i].length; j++) this.addEdge(i, fslist[i]);
+      for (const item of fslist[i]) this.addEdge(i, item);
     }
   }
 
@@ -190,24 +196,52 @@ class BipGraph {
     return true;
   }
 
+  fromAdjToMatch(adj) {
+    // let match = adj.slice();
+    const deMatch = new Map();
+
+    for (let [key, value] of this.__match) {
+      deMatch.set(value, key);
+    }
+
+    for (const item of adj) {
+      if (deMatch.has(item[1])) {
+        item[1] = deMatch.get(item[1]);
+      }
+    }
+
+    return adj;
+  }
+
   hopcroftKarp() {
     this.__pairU = Array(this.__m).fill(NIL);
     this.__pairV = Array(this.__n).fill(NIL);
     this.__dist = Array(this.__m).fill(NIL);
     let count = 0;
-    let tmp = [];
+    let adj = [];
     while (this.bfs()) {
       for (let u = 0; u < this.__m; u++) {
-        if (this.__pairU[u] === NIL)
-          if (this.dfs(u)) {
-            count++;
-            if (count === this.__n) {
-              for (let i = 0; i < count; i++) tmp.push([i, this.__pairU[i]]);
-            }
-          }
+        if (this.__pairU[u] === NIL && this.dfs(u)) {
+          count++;
+          // if (count === this.__n) {
+          //   for (let i = 0; i < this.__m; i++) {
+          //     console.log([i, this.__pairU[i]]);
+          //     adj.push([i, this.__pairU[i]]);
+          //   }
+          // }
+        }
       }
     }
-    // return [count, tmp];
-    return tmp;
+
+    for (let i = 0; i < this.__m; i++) {
+      //   console.log([i, this.__pairU[i]]);
+      adj.push([i, this.__pairU[i]]);
+    }
+
+    // console.log(adj);
+
+    return this.fromAdjToMatch(adj);;
   }
 }
+
+console.log(getFilesFromServers_HopCroft_Karp([0,2,18]));

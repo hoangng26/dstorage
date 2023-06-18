@@ -1,9 +1,8 @@
+import FileActions from '@/components/FileActions';
 import ListAllFiles from '@/components/ListAllFiles';
 import ListFiles from '@/components/ListFiles';
 import ListServers from '@/components/ListServers';
 import Navbar from '@/components/Navbar';
-import ServerUpload from '@/components/ServerUpload';
-import UploadFile from '@/components/UploadFile';
 import { getListFilesFromAllServers } from '@/lib/file';
 import { getActiveServer, getAllServers, updateActiveServer } from '@/lib/servers';
 import { Layout } from 'antd';
@@ -14,7 +13,7 @@ import { useState } from 'react';
 const { Header, Sider, Content, Footer } = Layout;
 
 export default function Home({ servers, activeServers, listServersSaveFiles, listFilesOnServers }) {
-  const [selectedServer, setSelectedServer] = useState(servers[0]);
+  const [selectedServer, setSelectedServer] = useState('');
   const [showAllFile, setShowAllFile] = useState(true);
 
   const [listServersState, setListServersState] = useState(listServersSaveFiles);
@@ -29,8 +28,8 @@ export default function Home({ servers, activeServers, listServersSaveFiles, lis
   };
 
   const handleSelectServer = ({ key, keyPath, domEvent }) => {
+    setSelectedServer(key);
     if (keyPath[0]) {
-      setSelectedServer(key);
       setShowAllFile(false);
     } else {
       setShowAllFile(true);
@@ -54,17 +53,17 @@ export default function Home({ servers, activeServers, listServersSaveFiles, lis
             </Sider>
 
             <Content className="px-8">
+              <FileActions
+                activeServers={activeServers}
+                selectedServer={selectedServer}
+                onUpdateListFiles={handleUpdateListFiles}
+              />
+
               {!showAllFile && (
                 <>
-                  <ServerUpload
-                    activeServers={activeServers}
-                    selectedServer={selectedServer}
-                    onUpdateListFiles={handleUpdateListFiles}
-                  />
-
                   <ListFiles
                     server={selectedServer}
-                    listFiles={listServersState[selectedServer]}
+                    listFiles={selectedServer ? listServersState[selectedServer] : []}
                     onUpdateListFiles={handleUpdateListFiles}
                   />
                 </>
@@ -72,8 +71,6 @@ export default function Home({ servers, activeServers, listServersSaveFiles, lis
 
               {showAllFile && (
                 <>
-                  <UploadFile activeServers={activeServers} onUpdateListFiles={handleUpdateListFiles} />
-
                   <ListAllFiles
                     listFiles={listFilesState}
                     activeServers={activeServers}

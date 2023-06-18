@@ -3,7 +3,7 @@ import { Button, Modal } from 'antd';
 import axios from 'axios';
 import { useRef, useState } from 'react';
 
-export default function UploadFile({ activeServers, onUpdateListFiles }) {
+export default function UploadFile({ selectedServer, activeServers, onUpdateListFiles }) {
   const [showUpload, setShowUpload] = useState(false);
   const [fileUpload, setFileUpload] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -15,6 +15,21 @@ export default function UploadFile({ activeServers, onUpdateListFiles }) {
       return;
     }
     setButtonLoading(true);
+
+    if (selectedServer) {
+      await UploadToSelectedServer();
+    } else {
+      await UploadToAllServer();
+    }
+
+    onUpdateListFiles();
+    formRef.current.reset();
+    setFileUpload(null);
+    setButtonLoading(false);
+    setShowUpload(false);
+  };
+
+  const UploadToAllServer = async () => {
     const listUploadServers = (await axios.get('/api/get-upload-servers')).data;
     const data = new FormData();
     data.append('file', fileUpload);
@@ -43,22 +58,39 @@ export default function UploadFile({ activeServers, onUpdateListFiles }) {
         }
       }),
     );
+  };
 
-    onUpdateListFiles();
-    formRef.current.reset();
-    setFileUpload(null);
-    setButtonLoading(false);
-    setShowUpload(false);
+  const UploadToSelectedServer = async () => {
+    const data = new FormData();
+    data.append('file', fileUpload);
+
+    if (activeServers.find((server) => server === selectedServer)) {
+      await axios
+        .post(`http://${selectedServer}/api/upload`, data)
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    } else {
+      data.append('server', selectedServer);
+      await axios
+        .post(`/api/upload`, data)
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
   };
 
   return (
     <>
-      <div className="mt-8">
-        <div className="font-bold pb-4 text-xl">All Servers</div>
-        <Button type="primary" size="large" onClick={() => setShowUpload(!showUpload)} icon={<CloudUploadOutlined />}>
-          Upload file
-        </Button>
-      </div>
+      <Button type="primary" size="large" onClick={() => setShowUpload(!showUpload)} icon={<CloudUploadOutlined />}>
+        Upload file
+      </Button>
 
       <Modal
         title="Upload File"

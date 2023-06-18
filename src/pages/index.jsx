@@ -82,7 +82,7 @@ export default function Home({ servers, activeServers, listServersSaveFiles, lis
               {!showAllFile && (
                 <>
                   <ListFiles
-                    server={selectedServer}
+                    server={[selectedServer]}
                     listFiles={selectedServer ? listServersState[selectedServer] : []}
                     onUpdateListFiles={handleUpdateListFiles}
                     selectedFiles={selectedFiles}

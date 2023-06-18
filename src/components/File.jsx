@@ -31,7 +31,7 @@ export default function File({ server, fileName, onDelete, downloadLink, selecte
 
   const handleDeleteEvent = async (e) => {
     await onDelete(server, fileName);
-    onUpdateSelectedFiles(fileName, server, selectedFiles.findIndex((file) => file.fileName === fileName) >= 0);
+    onUpdateSelectedFiles(fileName, server, true, false);
 
     notification.open({
       message: 'Delete file',

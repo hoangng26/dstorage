@@ -1,8 +1,6 @@
-import fs from 'fs/promises';
+import { getLocalStoragePath } from '@/lib/file';
+import fs from 'fs';
 import NextCors from 'nextjs-cors';
-import path from 'path';
-
-const storagePath = path.join(process.cwd(), 'storage');
 
 export default async function handler(req, res, next) {
   await NextCors(req, res, {
@@ -13,7 +11,17 @@ export default async function handler(req, res, next) {
 
   if (req.method === 'DELETE') {
     const fileName = req.body.fileName;
-    fs.unlink(`${storagePath}/${fileName}`, (err) => {
+    const filePath = getLocalStoragePath(fileName);
+
+    try {
+      fs.readFileSync(filePath);
+    } catch (error) {
+      res.status(404).json({
+        message: 'File not found',
+      });
+    }
+
+    fs.unlinkSync(filePath, (err) => {
       if (err) {
         throw err;
       } else {

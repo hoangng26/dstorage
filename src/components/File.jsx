@@ -1,12 +1,8 @@
 import { DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Modal, notification } from 'antd';
-import { useState } from 'react';
 import FileIcon from './FileIcon';
 
 export default function File({ server, fileName, onDelete, downloadLink, selectedFiles, onUpdateSelectedFiles }) {
-  const [openDeletePopup, setOpenDeletePopup] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
   const handleClickEvent = (e) => {
     e.preventDefault();
     onUpdateSelectedFiles(fileName, server, selectedFiles.findIndex((file) => file.fileName === fileName) >= 0);
@@ -34,11 +30,8 @@ export default function File({ server, fileName, onDelete, downloadLink, selecte
   };
 
   const handleDeleteEvent = async (e) => {
-    setDeleteLoading(true);
     await onDelete(server, fileName);
-    setOpenDeletePopup(false);
-    setDeleteLoading(false);
-    onUpdateSelectedFiles(fileName, true);
+    onUpdateSelectedFiles(fileName, server, selectedFiles.findIndex((file) => file.fileName === fileName) >= 0);
 
     notification.open({
       message: 'Delete file',

@@ -1,8 +1,6 @@
+import { getLocalStoragePath } from '@/lib/file';
 import fs from 'fs';
 import NextCors from 'nextjs-cors';
-import path from 'path';
-
-const storagePath = path.join(process.cwd(), 'storage');
 
 export const config = {
   api: {
@@ -19,7 +17,16 @@ export default async function handler(req, res, next) {
 
   if (req.method === 'GET') {
     const { fileName } = req.query;
-    const filePath = `${storagePath}/${fileName}`;
+    const filePath = getLocalStoragePath(fileName);
+
+    try {
+      fs.readFileSync(filePath);
+    } catch (error) {
+      res.status(404).json({
+        message: 'File not found',
+      });
+    }
+
     const stat = fs.statSync(filePath);
 
     res.writeHead(200, {

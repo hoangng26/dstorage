@@ -31,6 +31,11 @@ export async function saveUploadFile(file, server = '', fileName = '') {
   return;
 }
 
+export function getLocalStoragePath(fileName) {
+  const filePath = path.join(storagePath, fileName);
+  return filePath;
+}
+
 export async function getFilesOnServer(server) {
   try {
     let response = await axios.get(`http://${server}/api/read`);

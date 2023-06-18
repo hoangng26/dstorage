@@ -73,3 +73,42 @@ export async function addNewServer(serverAddress) {
     return;
   }
 }
+
+export async function getNewBlankForUpload() {
+  const dataPath = path.join(process.cwd(), 'static/available.json');
+  let result = true;
+
+  try {
+    const availableServers = JSON.parse(fs.readFileSync(dataPath));
+    result = availableServers.shift();
+    fs.writeFileSync(dataPath, JSON.stringify(availableServers, null, 2), (error) => {
+      console.log(error);
+      result = false;
+    });
+  } catch (error) {
+    return null;
+  }
+
+  return result;
+}
+
+export async function addNewBlankForUpload(servers) {
+  const dataPath = path.join(process.cwd(), 'static/available.json');
+  let result = true;
+
+  try {
+    const availableServers = JSON.parse(fs.readFileSync(dataPath));
+    availableServers.push(servers);
+    fs.writeFileSync(dataPath, JSON.stringify(availableServers, null, 2), (error) => {
+      console.log(error);
+      result = false;
+    });
+  } catch (error) {
+    fs.writeFileSync(dataPath, JSON.stringify([servers], null, 2), (error) => {
+      console.log(error);
+      result = false;
+    });
+  }
+
+  return result;
+}

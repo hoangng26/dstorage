@@ -3,14 +3,13 @@ import { Button, Dropdown, Popconfirm, notification } from 'antd';
 import { useState } from 'react';
 import FileIcon from './FileIcon';
 
-export default function File({ server, fileName, onDelete, downloadLink }) {
-  const [selection, setSelection] = useState(false);
+export default function File({ server, fileName, onDelete, downloadLink, selectedFiles, onUpdateSelectedFiles }) {
   const [openDeletePopup, setOpenDeletePopup] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const handleClickEvent = (e) => {
     e.preventDefault();
-    setSelection(!selection);
+    onUpdateSelectedFiles(fileName, server, selectedFiles.findIndex((file) => file.fileName === fileName) >= 0);
   };
 
   const handleDeleteEvent = async (e) => {
@@ -18,6 +17,8 @@ export default function File({ server, fileName, onDelete, downloadLink }) {
     await onDelete(server, fileName);
     setOpenDeletePopup(false);
     setDeleteLoading(false);
+    onUpdateSelectedFiles(fileName, true);
+
     notification.open({
       message: 'Delete file',
       icon: <DeleteOutlined className="text-red-500" />,
@@ -80,7 +81,7 @@ export default function File({ server, fileName, onDelete, downloadLink }) {
         key={fileName}
         onClick={handleClickEvent}
         className={`flex justify-between gap-4 items-center rounded-xl w-96 px-4 py-10 ${
-          selection && 'border-blue-400 text-blue-400'
+          selectedFiles.findIndex((file) => file.fileName === fileName) >= 0 && 'border-blue-400 text-blue-400'
         }`}
         icon={<FileIcon extension={fileName.split('.').pop()} />}
       >

@@ -15,6 +15,7 @@ const { Header, Sider, Content, Footer } = Layout;
 export default function Home({ servers, activeServers, listServersSaveFiles, listFilesOnServers }) {
   const [selectedServer, setSelectedServer] = useState('');
   const [showAllFile, setShowAllFile] = useState(true);
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const [listServersState, setListServersState] = useState(listServersSaveFiles);
   const [listFilesState, setListFilesState] = useState(listFilesOnServers);
@@ -29,10 +30,27 @@ export default function Home({ servers, activeServers, listServersSaveFiles, lis
 
   const handleSelectServer = ({ key, keyPath, domEvent }) => {
     setSelectedServer(key);
+    handleUpdateSelectedFiles('', '', true, true);
     if (keyPath[0]) {
       setShowAllFile(false);
     } else {
       setShowAllFile(true);
+    }
+  };
+
+  const handleUpdateSelectedFiles = (fileName, servers, remove, all = false) => {
+    if (!remove) {
+      setSelectedFiles((prevState) => [
+        ...prevState,
+        {
+          fileName,
+          servers,
+        },
+      ]);
+    } else if (all) {
+      setSelectedFiles([]);
+    } else {
+      setSelectedFiles((prevState) => prevState.filter((file) => file.fileName !== fileName));
     }
   };
 
@@ -56,7 +74,9 @@ export default function Home({ servers, activeServers, listServersSaveFiles, lis
               <FileActions
                 activeServers={activeServers}
                 selectedServer={selectedServer}
+                selectedFiles={selectedFiles}
                 onUpdateListFiles={handleUpdateListFiles}
+                onUpdateSelectedFiles={handleUpdateSelectedFiles}
               />
 
               {!showAllFile && (
@@ -65,6 +85,8 @@ export default function Home({ servers, activeServers, listServersSaveFiles, lis
                     server={selectedServer}
                     listFiles={selectedServer ? listServersState[selectedServer] : []}
                     onUpdateListFiles={handleUpdateListFiles}
+                    selectedFiles={selectedFiles}
+                    onUpdateSelectedFiles={handleUpdateSelectedFiles}
                   />
                 </>
               )}
@@ -75,6 +97,8 @@ export default function Home({ servers, activeServers, listServersSaveFiles, lis
                     listFiles={listFilesState}
                     activeServers={activeServers}
                     onUpdateListFiles={handleUpdateListFiles}
+                    selectedFiles={selectedFiles}
+                    onUpdateSelectedFiles={handleUpdateSelectedFiles}
                   />
                 </>
               )}

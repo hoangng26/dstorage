@@ -37,6 +37,9 @@ yarn-error.log*
 # static files
 /static
 
-#package
+# package
 package-lock.json
 package.json
+
+# VSCode files
+.vscode

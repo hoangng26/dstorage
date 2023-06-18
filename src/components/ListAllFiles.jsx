@@ -1,7 +1,13 @@
 import axios from 'axios';
 import File from './File';
 
-export default function ListAllFiles({ listFiles, activeServers, onUpdateListFiles }) {
+export default function ListAllFiles({
+  listFiles,
+  activeServers,
+  selectedFiles,
+  onUpdateListFiles,
+  onUpdateSelectedFiles,
+}) {
   const handleDeleteEvent = async (listServers, fileName) => {
     for (const server of listServers) {
       await axios
@@ -37,6 +43,8 @@ export default function ListAllFiles({ listFiles, activeServers, onUpdateListFil
           server={file.servers}
           onDelete={handleDeleteEvent}
           downloadLink={getDownloadLink(file.fileName, file.servers)}
+          selectedFiles={selectedFiles}
+          onUpdateSelectedFiles={onUpdateSelectedFiles}
         />
       ))}
     </div>

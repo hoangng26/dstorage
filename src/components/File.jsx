@@ -1,14 +1,33 @@
 import { DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
-import { Button, Dropdown } from 'antd';
+import { Button, Dropdown, Popconfirm, notification } from 'antd';
 import { useState } from 'react';
 import FileIcon from './FileIcon';
 
 export default function File({ server, fileName, onDelete, downloadLink }) {
   const [selection, setSelection] = useState(false);
+  const [openDeletePopup, setOpenDeletePopup] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const handleClickEvent = (e) => {
     e.preventDefault();
     setSelection(!selection);
+  };
+
+  const handleDeleteEvent = async (e) => {
+    setDeleteLoading(true);
+    await onDelete(server, fileName);
+    setOpenDeletePopup(false);
+    setDeleteLoading(false);
+    notification.open({
+      message: 'Delete file',
+      icon: <DeleteOutlined className="text-red-500" />,
+      description: `"${fileName}" was successfully deleted.`,
+      duration: 3,
+    });
+  };
+
+  const handleDownloadEvent = (e) => {
+    window.open(downloadLink, '_blank', 'noopener noreferrer');
   };
 
   const ActionMenuItems = [
@@ -17,17 +36,33 @@ export default function File({ server, fileName, onDelete, downloadLink }) {
       icon: <DownloadOutlined />,
       label: 'Download',
       className: 'text-green-500 hover:bg-green-100',
-      onClick: () => {
-        window.open(downloadLink, '_blank', 'noopener noreferrer');
-      },
+      onClick: handleDownloadEvent,
     },
     {
       key: 'action-delete',
       icon: <DeleteOutlined />,
-      label: 'Delete',
+      label: (
+        <Popconfirm
+          title="Delete file"
+          icon={<DeleteOutlined className="text-red-500" />}
+          description={`Are you sure you want to delete "${fileName}"?`}
+          open={openDeletePopup}
+          okButtonProps={{
+            loading: deleteLoading,
+            icon: <DeleteOutlined />,
+          }}
+          onConfirm={handleDeleteEvent}
+          onCancel={(e) => {
+            setOpenDeletePopup(false);
+            e.stopPropagation();
+          }}
+        >
+          <span>Delete</span>
+        </Popconfirm>
+      ),
       danger: true,
-      onClick: async () => {
-        await onDelete(server, fileName);
+      onClick: () => {
+        setOpenDeletePopup(true);
       },
     },
   ];
@@ -48,7 +83,6 @@ export default function File({ server, fileName, onDelete, downloadLink }) {
           selection && 'border-blue-400 text-blue-400'
         }`}
         icon={<FileIcon extension={fileName.split('.').pop()} />}
-        onContextMenu={(e) => console.log('Right click')}
       >
         <span className="overflow-hidden text-ellipsis w-full text-left">{fileName}</span>
       </Button>

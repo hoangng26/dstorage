@@ -27,7 +27,11 @@ export default function FileActions({
           <div className="flex gap-4">
             <DownloadFiles listFiles={selectedFiles} />
 
-            <DeleteFiles listFiles={selectedFiles} />
+            <DeleteFiles
+              listFiles={selectedFiles}
+              onUpdateListFiles={onUpdateListFiles}
+              onUpdateSelectedFiles={onUpdateSelectedFiles}
+            />
 
             <Button
               type="primary"

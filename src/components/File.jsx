@@ -1,5 +1,5 @@
 import { DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
-import { Button, Dropdown, Popconfirm, notification } from 'antd';
+import { Button, Dropdown, Modal, notification } from 'antd';
 import { useState } from 'react';
 import FileIcon from './FileIcon';
 
@@ -10,6 +10,27 @@ export default function File({ server, fileName, onDelete, downloadLink, selecte
   const handleClickEvent = (e) => {
     e.preventDefault();
     onUpdateSelectedFiles(fileName, server, selectedFiles.findIndex((file) => file.fileName === fileName) >= 0);
+  };
+
+  const handleOpenDeleteModal = () => {
+    Modal.confirm({
+      title: 'Delete Files',
+      icon: <DeleteOutlined className="text-red-500" />,
+      content: (
+        <span>
+          Are you sure you want to delete{' '}
+          <a className="text-blue-500" href={downloadLink} target="_blank" rel="noopener noreferrer">
+            {fileName}
+          </a>
+          ?
+        </span>
+      ),
+      onOk: handleDeleteEvent,
+      okButtonProps: {
+        icon: <DeleteOutlined />,
+        danger: true,
+      },
+    });
   };
 
   const handleDeleteEvent = async (e) => {
@@ -42,29 +63,9 @@ export default function File({ server, fileName, onDelete, downloadLink, selecte
     {
       key: 'action-delete',
       icon: <DeleteOutlined />,
-      label: (
-        <Popconfirm
-          title="Delete file"
-          icon={<DeleteOutlined className="text-red-500" />}
-          description={`Are you sure you want to delete "${fileName}"?`}
-          open={openDeletePopup}
-          okButtonProps={{
-            loading: deleteLoading,
-            icon: <DeleteOutlined />,
-          }}
-          onConfirm={handleDeleteEvent}
-          onCancel={(e) => {
-            setOpenDeletePopup(false);
-            e.stopPropagation();
-          }}
-        >
-          <span>Delete</span>
-        </Popconfirm>
-      ),
+      label: 'Delete',
       danger: true,
-      onClick: () => {
-        setOpenDeletePopup(true);
-      },
+      onClick: handleOpenDeleteModal,
     },
   ];
 

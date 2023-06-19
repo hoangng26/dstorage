@@ -3,9 +3,11 @@ import ListAllFiles from '@/components/ListAllFiles';
 import ListFiles from '@/components/ListFiles';
 import ListServers from '@/components/ListServers';
 import Navbar from '@/components/Navbar';
+import UploadFile from '@/components/UploadFile';
 import { getListFilesFromAllServers } from '@/lib/file';
 import { getActiveServer, getAllServers, updateActiveServer } from '@/lib/servers';
-import { Layout } from 'antd';
+import { CloudUploadOutlined } from '@ant-design/icons';
+import { Layout, Result, Skeleton } from 'antd';
 import axios from 'axios';
 import Head from 'next/head';
 import { useState } from 'react';
@@ -16,16 +18,19 @@ export default function Home({ servers, activeServers, listServersSaveFiles, lis
   const [selectedServer, setSelectedServer] = useState('');
   const [showAllFile, setShowAllFile] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [fileLoading, setFileLoading] = useState(false);
 
   const [listServersState, setListServersState] = useState(listServersSaveFiles);
   const [listFilesState, setListFilesState] = useState(listFilesOnServers);
 
   const handleUpdateListFiles = async () => {
+    setFileLoading(true);
     let { data } = await axios.get(`/api/get-all-files`);
     const { listFiles, listServers } = data;
 
     setListFilesState(listFiles);
     setListServersState(listServers);
+    setFileLoading(false);
   };
 
   const handleSelectServer = ({ key, keyPath, domEvent }) => {
@@ -70,16 +75,39 @@ export default function Home({ servers, activeServers, listServersSaveFiles, lis
               <ListServers servers={servers} onSelectServer={handleSelectServer} />
             </Sider>
 
-            <Content className="px-8">
+            <Content className="px-8 h-full w-full">
               <FileActions
                 activeServers={activeServers}
                 selectedServer={selectedServer}
+                listFiles={listFilesState}
                 selectedFiles={selectedFiles}
                 onUpdateListFiles={handleUpdateListFiles}
                 onUpdateSelectedFiles={handleUpdateSelectedFiles}
               />
 
-              {!showAllFile && (
+              <Skeleton
+                active
+                loading={fileLoading}
+                paragraph={{
+                  rows: 10,
+                }}
+              />
+
+              {!fileLoading && !listFilesState.length && (
+                <Result
+                  icon={<CloudUploadOutlined />}
+                  title="Upload your files here! 👇"
+                  extra={
+                    <UploadFile
+                      activeServers={activeServers}
+                      selectedServer={selectedServer}
+                      onUpdateListFiles={handleUpdateListFiles}
+                    />
+                  }
+                />
+              )}
+
+              {!showAllFile && !fileLoading && (
                 <>
                   <ListFiles
                     server={[selectedServer]}
@@ -91,7 +119,7 @@ export default function Home({ servers, activeServers, listServersSaveFiles, lis
                 </>
               )}
 
-              {showAllFile && (
+              {showAllFile && !fileLoading && (
                 <>
                   <ListAllFiles
                     listFiles={listFilesState}

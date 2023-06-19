@@ -1,35 +1,36 @@
-import { CloudUploadOutlined } from '@ant-design/icons';
-import { Button, Modal } from 'antd';
+import { CloudUploadOutlined, InboxOutlined } from '@ant-design/icons';
+import { Button, Modal, Upload, message } from 'antd';
 import axios from 'axios';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
+const { Dragger } = Upload;
 
 export default function UploadFile({ selectedServer, activeServers, onUpdateListFiles }) {
   const [showUpload, setShowUpload] = useState(false);
-  const [fileUpload, setFileUpload] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
-
-  const formRef = useRef();
+  const [filesUpload, setFilesUpload] = useState([]);
 
   const handleUploadEvent = async () => {
-    if (!fileUpload) {
+    if (!filesUpload.length) {
       return;
     }
+
     setButtonLoading(true);
 
-    if (selectedServer) {
-      await UploadToSelectedServer();
-    } else {
-      await UploadToAllServer();
+    for (let file of filesUpload) {
+      if (selectedServer) {
+        await UploadToSelectedServer(file);
+      } else {
+        await UploadToAllServer(file);
+      }
     }
 
     onUpdateListFiles();
-    formRef.current.reset();
-    setFileUpload(null);
+    setFilesUpload([]);
     setButtonLoading(false);
     setShowUpload(false);
   };
 
-  const UploadToAllServer = async () => {
+  const UploadToAllServer = async (fileUpload) => {
     const listUploadServers = (await axios.get('/api/get-upload-servers')).data;
     const data = new FormData();
     data.append('file', fileUpload);
@@ -60,7 +61,7 @@ export default function UploadFile({ selectedServer, activeServers, onUpdateList
     );
   };
 
-  const UploadToSelectedServer = async () => {
+  const UploadToSelectedServer = async (fileUpload) => {
     const data = new FormData();
     data.append('file', fileUpload);
 
@@ -89,7 +90,7 @@ export default function UploadFile({ selectedServer, activeServers, onUpdateList
   return (
     <>
       <Button type="primary" size="large" onClick={() => setShowUpload(!showUpload)} icon={<CloudUploadOutlined />}>
-        Upload file
+        Upload Files
       </Button>
 
       <Modal
@@ -105,18 +106,33 @@ export default function UploadFile({ selectedServer, activeServers, onUpdateList
           if (buttonLoading) {
             return;
           }
-          formRef.current.reset();
+          setFilesUpload([]);
           setShowUpload(false);
         }}
       >
-        <form ref={formRef} className="mt-8">
-          <input
-            type="file"
-            name="file-upload"
-            id="file-upload"
-            onChange={(event) => setFileUpload(event.target.files[0])}
-          />
-        </form>
+        <Dragger
+          name="file"
+          multiple={true}
+          fileList={filesUpload}
+          disabled={buttonLoading}
+          beforeUpload={(file) => {
+            if (filesUpload.findIndex(({ fileName }) => fileName === file.fileName) >= 0) {
+              message.warning('You have selected this file!');
+              return false;
+            }
+            setFilesUpload((prevState) => [...prevState, file]);
+            return false;
+          }}
+          onRemove={(file) => setFilesUpload((prevState) => prevState.filter((item) => item !== file))}
+        >
+          <p className="ant-upload-drag-icon">
+            <InboxOutlined />
+          </p>
+          <p className="ant-upload-text">Click or drag file to this area to upload</p>
+          <p className="ant-upload-hint">
+            Support for a single or bulk upload. Strictly prohibited from uploading company data or other banned files.
+          </p>
+        </Dragger>
       </Modal>
     </>
   );

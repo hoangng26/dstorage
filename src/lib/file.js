@@ -8,13 +8,28 @@ const storagePath = path.join(process.cwd(), 'storage');
 
 export async function getBlankPosition() {
   try {
-    const listFiles = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'static/files.json')));
+    const { listFilesOnServers: listFiles } = await getListFilesFromAllServers();
 
     const availablePosition = listFiles.findIndex((f, index) => f.fileName.split('_')[1] != index + 1);
     return availablePosition >= 0 ? availablePosition : listFiles.length;
   } catch (error) {
     return 0;
   }
+}
+
+export function shortenName(fileName) {
+  const tokens = fileName.split('_');
+  return fileName.replace(`${tokens[0]}_${tokens[1]}_`, '');
+}
+
+export async function findIndexOnLocal(filename) {
+  const listFiles = await readAllFilenames();
+  return listFiles.findIndex((file) => shortenName(file) === filename);
+}
+
+export async function findIndexOnAllServers(fileName) {
+  const { listFilesOnServers: listFiles } = await getListFilesFromAllServers();
+  return listFiles.findIndex((item) => shortenName(item.fileName) === fileName);
 }
 
 export async function readAllFilenames(folder = '') {
@@ -32,7 +47,11 @@ export async function saveUploadFile(file, server = '', fileName = '') {
   const saveDirectory = path.join(storagePath, server);
   const availablePosition = await getBlankPosition();
 
-  const saveFileName = `File_${availablePosition + 1}_${file.originalFilename || fileName}`;
+  const checkIndex = await findIndexOnAllServers(file.originalFilename || fileName);
+
+  const saveFileName = `File_${(checkIndex >= 0 ? checkIndex : availablePosition) + 1}_${
+    file.originalFilename || fileName
+  }`;
 
   try {
     fs.readdirSync(saveDirectory);

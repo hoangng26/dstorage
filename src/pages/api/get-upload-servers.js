@@ -1,4 +1,5 @@
-import { createECBCTable, getBlankPosition, getECBCParameters } from '@/lib/file';
+import { createECBCTable } from '@/lib/calECBC';
+import { getBlankPosition } from '@/lib/file';
 import { getAllServers } from '@/lib/servers';
 import NextCors from 'nextjs-cors';
 
@@ -10,8 +11,7 @@ export default async function handler(req, res, next) {
   });
 
   if (req.method === 'GET') {
-    const ECBC_table = await createECBCTable();
-    const { ECBC_m: m, ECBC_n: n, ECBC_t: t } = await getECBCParameters();
+    const { ECBC_m: m, ECBC_n: n, ECBC_t: t, ECBC_table } = await createECBCTable();
     const availablePosition = await getBlankPosition();
 
     const table = ECBC_table.map((item) => item[(availablePosition >= 0 ? availablePosition : n) % (m * t)]);

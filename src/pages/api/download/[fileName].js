@@ -1,4 +1,5 @@
-import { getLocalStoragePath } from '@/lib/file';
+import { getLocalStoragePath, shortenName } from '@/lib/file';
+import contentDisposition from 'content-disposition';
 import fs from 'fs';
 import NextCors from 'nextjs-cors';
 
@@ -31,6 +32,7 @@ export default async function handler(req, res, next) {
 
     res.writeHead(200, {
       'Content-Length': stat.size,
+      'Content-Disposition': contentDisposition(shortenName(fileName)),
     });
 
     const readStream = fs.createReadStream(filePath);

@@ -42,7 +42,7 @@ export default function File({ server, fileName, onDelete, downloadLink, selecte
   };
 
   const handleDownloadEvent = (e) => {
-    window.open(downloadLink, '_blank', 'noopener noreferrer');
+    window.open(downloadLink, '_parent', 'noopener noreferrer');
   };
 
   const ActionMenuItems = [
@@ -72,7 +72,7 @@ export default function File({ server, fileName, onDelete, downloadLink, selecte
     >
       <Button
         href={downloadLink}
-        target="_blank"
+        target="_parent"
         key={fileName}
         onClick={handleClickEvent}
         className={`flex justify-between gap-4 items-center rounded-xl w-96 px-4 py-10 ${

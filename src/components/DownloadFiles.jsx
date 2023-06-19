@@ -1,9 +1,26 @@
 import { DownloadOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
+import axios from 'axios';
 
 function DownloadFiles({ listFiles }) {
   const handleDownloadEvent = async () => {
-    console.log(...listFiles);
+    if (!listFiles || listFiles.length === 0) {
+      return;
+    }
+
+    const listServers = (
+      await axios.post(
+        '/api/download',
+        listFiles.map((file) => file.fileName),
+      )
+    ).data;
+
+    listServers.forEach((item) => {
+      const server = item.server;
+      item.listFiles.forEach((fileName) => {
+        window.open(`http://${server}/api/download/${fileName}`, '_parent', 'noopener noreferrer');
+      });
+    });
   };
 
   return (

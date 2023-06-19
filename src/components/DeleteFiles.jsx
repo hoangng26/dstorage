@@ -41,7 +41,11 @@ function DeleteFiles({ listFiles, onUpdateListFiles, onUpdateSelectedFiles }) {
     notification.open({
       message: 'Delete Files',
       icon: <DeleteOutlined className="text-red-500" />,
-      description: `${listFiles.length} files was successfully deleted.`,
+      description: (
+        <span>
+          <span className="text-blue-500">{listFiles.length} files</span> was successfully deleted.
+        </span>
+      ),
       duration: 3,
     });
   };

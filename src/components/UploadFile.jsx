@@ -1,5 +1,5 @@
 import { CloudUploadOutlined, InboxOutlined } from '@ant-design/icons';
-import { Button, Modal, Upload, message } from 'antd';
+import { Button, Modal, Upload, message, notification } from 'antd';
 import axios from 'axios';
 import { useState } from 'react';
 const { Dragger } = Upload;
@@ -23,6 +23,19 @@ export default function UploadFile({ selectedServer, activeServers, onUpdateList
         await UploadToAllServer(file);
       }
     }
+
+    notification.open({
+      message: 'Upload Files',
+      description: (
+        <span>
+          <span className="text-blue-500">
+            {filesUpload.length > 1 ? `${filesUpload.length} files` : `${filesUpload[0].name}`}
+          </span>{' '}
+          was uploaded successfully!
+        </span>
+      ),
+      icon: <CloudUploadOutlined className="text-blue-500" />,
+    });
 
     onUpdateListFiles();
     setFilesUpload([]);

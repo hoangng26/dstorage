@@ -36,7 +36,11 @@ export default function File({ server, fileName, onDelete, downloadLink, selecte
     notification.open({
       message: 'Delete file',
       icon: <DeleteOutlined className="text-red-500" />,
-      description: `"${fileName}" was successfully deleted.`,
+      description: (
+        <span>
+          <span className="text-blue-500">{fileName}</span> was successfully deleted.
+        </span>
+      ),
       duration: 3,
     });
   };

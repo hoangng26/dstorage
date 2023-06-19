@@ -1,13 +1,20 @@
 import { getListFilesFromAllServers } from './file';
+import { getAllServers } from './servers';
 
 export async function getECBCParameters() {
   const { listFilesOnServers: listFiles, listServersSaveFiles: listServers } = await getListFilesFromAllServers();
-  const ECBC_N = 42;
-  const ECBC_n = listFiles.length + 1;
-  const ECBC_m = Object.keys(listServers).length;
+  const listAllServers = await getAllServers();
+
+  const ECBC_N = 60;
+  const ECBC_nfiles = 30;
   const ECBC_k = 13;
   const ECBC_r = 2;
   const ECBC_t = 3;
+  const ECBC_m = Object.keys(listServers).length;
+  const ECBC_n = listFiles.length > ECBC_m * ECBC_t ? listFiles.length : ECBC_m * ECBC_t;
+  const ECBC_count = Math.ceil(ECBC_nfiles / ECBC_n);
+  const list_of_servers = listAllServers.map((server, index) => !server.active && index).filter((item) => item);
+
   return {
     ECBC_N,
     ECBC_n,
@@ -15,6 +22,9 @@ export async function getECBCParameters() {
     ECBC_k,
     ECBC_r,
     ECBC_t,
+    ECBC_nfiles,
+    ECBC_count,
+    list_of_servers,
   };
 }
 
@@ -26,7 +36,8 @@ export async function getECBCParameters() {
 //   0 <= a < ECBC_n, 0 <= b < ECBC_m
 // Usage: getECBCTableFS(), getECBCTableSF()
 export async function createECBCTable() {
-  const { ECBC_N, ECBC_k, ECBC_m, ECBC_n, ECBC_r, ECBC_t } = await getECBCParameters();
+  const { ECBC_N, ECBC_k, ECBC_m, ECBC_n, ECBC_r, ECBC_t, ECBC_nfiles, ECBC_count, list_of_servers } =
+    await getECBCParameters();
   let table = [];
   const tm = ECBC_m * ECBC_t;
 
@@ -48,6 +59,17 @@ export async function createECBCTable() {
     table.push(row);
   }
 
+  let rs = table.slice();
+  for (let i = 1; i < ECBC_count; i++) {
+    for (let j = 0; j < rs.length; j++) {
+      rs[j] = rs[j].concat(table[j]);
+    }
+  }
+
+  const ECBC_table_origin = rs.map((item) => [...item]);
+
+  const ECBC_table = handleInactiveServers(rs, list_of_servers);
+
   return {
     ECBC_N,
     ECBC_n,
@@ -55,7 +77,11 @@ export async function createECBCTable() {
     ECBC_k,
     ECBC_r,
     ECBC_t,
-    ECBC_table: table,
+    ECBC_table_origin,
+    ECBC_table,
+    ECBC_nfiles,
+    ECBC_count,
+    list_of_servers,
   };
 }
 
@@ -95,14 +121,25 @@ export async function getECBCTableFS() {
   return table_fs;
 }
 
+// input: list of inactive servers
+// output: ECBC_table after remove the inactive servers
+// Usage: before upload/download files
+export function handleInactiveServers(ECBC_table_origin, servers) {
+  if (!Array.isArray(servers)) throw Error('handleInactiveServers(): invalid parameter');
+
+  let result_table = ECBC_table_origin.slice();
+  for (let index of servers) result_table[index].fill(0);
+
+  return result_table;
+}
+
 // HopCroft - Karp Algorithm: return the list of files got from servers
 // input: list of files to get
 // output list of servers from which to get input files, in format list[] respectively to the list of files
 //  server[i] is the server to get file[i]
 // Usage: get the
 export async function getFilesFromServers_HopCroft_Karp(files) {
-  const originalServers = await getServerFileList(files);
-  const slen = originalServers.length;
+  const { ECBC_m: slen } = await createECBCTable();
   const copy_servers = await copyServers(files);
   // console.log(`Copy_servers:`, copy_servers);
 
@@ -138,15 +175,17 @@ export async function getServerFileList(files) {
 
 // input: list of files (mod ECBC_n)
 // output: number of copies
-export function findNumberOfCopy(serverfilelist) {
-  return Math.max(...serverfilelist.map((list) => list.length));
+export async function findNumberOfCopy(serverfilelist) {
+  const { ECBC_t } = await createECBCTable();
+  return ECBC_t;
+  // return Math.max(...serverfilelist.map((list) => list.length));
 }
 
 // input: list of files
 // output: list of servers after copy
 export async function copyServers(files) {
   const originalServers = await getServerFileList(files);
-  const count = findNumberOfCopy(originalServers);
+  const count = await findNumberOfCopy(originalServers);
   let rs = originalServers;
   for (let i = 1; i < count; i++) rs = rs.concat(originalServers);
 

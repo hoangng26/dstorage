@@ -17,8 +17,8 @@ function DownloadFiles({ listFiles }) {
 
     listServers.forEach((item) => {
       const server = item.server;
-      item.listFiles.forEach((fileName) => {
-        window.open(`http://${server}/api/download/${fileName}`, '_parent', 'noopener noreferrer');
+      item.listFiles.map((fileName) => {
+        window.open(`http://${server}/api/download/${fileName}`, '_blank', 'noopener noreferrer');
       });
     });
   };

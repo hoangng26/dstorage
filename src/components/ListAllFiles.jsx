@@ -1,3 +1,4 @@
+import { shortenName } from '@/lib/file';
 import axios from 'axios';
 import File from './File';
 
@@ -36,17 +37,23 @@ export default function ListAllFiles({
 
   return (
     <div className="w-full my-8 flex gap-8 flex-wrap">
-      {listFiles.map((file) => (
-        <File
-          key={file.fileName}
-          fileName={file.fileName}
-          server={file.servers}
-          onDelete={handleDeleteEvent}
-          downloadLink={getDownloadLink(file.fileName, file.servers)}
-          selectedFiles={selectedFiles}
-          onUpdateSelectedFiles={onUpdateSelectedFiles}
-        />
-      ))}
+      {listFiles
+        .sort((a, b) => {
+          const oFa = shortenName(a.fileName);
+          const oFb = shortenName(b.fileName);
+          return oFa.localeCompare(oFb);
+        })
+        .map((file) => (
+          <File
+            key={file.fileName}
+            fileName={file.fileName}
+            server={file.servers}
+            onDelete={handleDeleteEvent}
+            downloadLink={getDownloadLink(file.fileName, file.servers)}
+            selectedFiles={selectedFiles}
+            onUpdateSelectedFiles={onUpdateSelectedFiles}
+          />
+        ))}
     </div>
   );
 }

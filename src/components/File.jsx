@@ -50,7 +50,7 @@ export default function File({ server, fileName, onDelete, downloadLink, selecte
       key: 'action-download',
       icon: <DownloadOutlined />,
       label: 'Download',
-      className: 'text-green-500 hover:bg-green-100',
+      className: 'text-green-500 hover:bg-green-100 px-6 py-3',
       onClick: handleDownloadEvent,
     },
     {
@@ -58,6 +58,7 @@ export default function File({ server, fileName, onDelete, downloadLink, selecte
       icon: <DeleteOutlined />,
       label: 'Delete',
       danger: true,
+      className: 'px-6 py-3',
       onClick: handleOpenDeleteModal,
     },
   ];
@@ -80,6 +81,7 @@ export default function File({ server, fileName, onDelete, downloadLink, selecte
         icon={<FileIcon extension={fileName.split('.').pop()} />}
       >
         <span className="overflow-hidden text-ellipsis w-full text-left">{fileName}</span>
+        {/* <span className="overflow-hidden text-ellipsis w-full text-left">{shortenName(fileName)}</span> */}
       </Button>
     </Dropdown>
   );

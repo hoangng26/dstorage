@@ -26,7 +26,7 @@ export default function ListFiles({ server, listFiles, onUpdateListFiles, select
           server={server}
           fileName={fileName}
           onDelete={handleDeleleEvent}
-          downloadLink={`http://${server}/api/download/${fileName}`}
+          downloadLink={`http://${server[0]}/api/download/${fileName}`}
           selectedFiles={selectedFiles}
           onUpdateSelectedFiles={onUpdateSelectedFiles}
         />

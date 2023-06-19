@@ -6,6 +6,13 @@ import { getAllServers } from './servers';
 
 const storagePath = path.join(process.cwd(), 'storage');
 
+export async function getBlankPosition() {
+  const { listFilesOnServers: listFiles } = await getListFilesFromAllServers();
+
+  const availablePosition = listFiles.findIndex((f, index) => f.fileName.split('_')[1] != index + 1);
+  return availablePosition >= 0 ? availablePosition : listFiles.length;
+}
+
 export async function readAllFilenames(folder = '') {
   const fileStoragePath = path.join(storagePath, folder);
   try {
@@ -19,6 +26,9 @@ export async function readAllFilenames(folder = '') {
 export async function saveUploadFile(file, server = '', fileName = '') {
   const data = fs.readFileSync(file.filepath);
   const saveDirectory = path.join(storagePath, server);
+  const availablePosition = await getBlankPosition();
+
+  const saveFileName = `File_${availablePosition + 1}_${file.originalFilename || fileName}`;
 
   try {
     fs.readdirSync(saveDirectory);
@@ -26,7 +36,7 @@ export async function saveUploadFile(file, server = '', fileName = '') {
     fs.mkdirSync(saveDirectory);
   }
 
-  fs.writeFileSync(`${saveDirectory}/${file.originalFilename || fileName}`, data);
+  fs.writeFileSync(`${saveDirectory}/${saveFileName}`, data);
   fs.unlinkSync(file.filepath);
   return;
 }

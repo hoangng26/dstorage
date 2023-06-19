@@ -7,10 +7,14 @@ import { getAllServers } from './servers';
 const storagePath = path.join(process.cwd(), 'storage');
 
 export async function getBlankPosition() {
-  const { listFilesOnServers: listFiles } = await getListFilesFromAllServers();
+  try {
+    const listFiles = fs.readdirSync(path.join(process.cwd(), 'static/files.json'));
 
-  const availablePosition = listFiles.findIndex((f, index) => f.fileName.split('_')[1] != index + 1);
-  return availablePosition >= 0 ? availablePosition : listFiles.length;
+    const availablePosition = listFiles.findIndex((f, index) => f.fileName.split('_')[1] != index + 1);
+    return availablePosition >= 0 ? availablePosition : listFiles.length;
+  } catch (error) {
+    return 0;
+  }
 }
 
 export async function readAllFilenames(folder = '') {

@@ -36,10 +36,17 @@ export async function readAllFilenames(folder = '') {
   const fileStoragePath = path.join(storagePath, folder);
   try {
     const fileNames = fs.readdirSync(fileStoragePath);
+    fileNames.sort((a, b) => compareFileNames(a, b));
     return fileNames;
   } catch (error) {
     return null;
   }
+}
+
+export function compareFileNames(fileName1, fileName2) {
+  const tokens1 = fileName1.split('_');
+  const tokens2 = fileName2.split('_');
+  return tokens1[1] - tokens2[1];
 }
 
 export async function saveUploadFile(file, server = '', fileName = '') {
@@ -160,7 +167,7 @@ export async function getListFilesFromAllServers() {
     listServersSaveFiles[server] = response;
   }
 
-  listFilesOnServers.sort((a, b) => (a.fileName > b.fileName ? 1 : -1));
+  listFilesOnServers.sort((a, b) => compareFileNames(a.fileName, b.fileName));
 
   fs.writeFileSync(
     path.join(process.cwd(), `static/files.json`),

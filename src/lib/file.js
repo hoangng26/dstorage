@@ -8,7 +8,7 @@ const storagePath = path.join(process.cwd(), 'storage');
 
 export async function getBlankPosition() {
   try {
-    const listFiles = fs.readdirSync(path.join(process.cwd(), 'static/files.json'));
+    const listFiles = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'static/files.json')));
 
     const availablePosition = listFiles.findIndex((f, index) => f.fileName.split('_')[1] != index + 1);
     return availablePosition >= 0 ? availablePosition : listFiles.length;

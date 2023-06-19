@@ -1,10 +1,16 @@
-const ECBC_N = 42;
+const ECBC_N = 60;
 const ECBC_n = 19;
+const ECBC_nfiles = 30;
+const ECBC_count = Math.ceil(ECBC_nfiles / ECBC_n);
 const ECBC_m = 6;
-const ECBC_k = 13;
-const ECBC_r = 1;
+const ECBC_k = 10;
+const ECBC_r = 2;
 const ECBC_t = 3;
-const ECBC_table = createECBCTable();
+const ECBC_table_origin = createECBCTable();
+
+const list_of_files = [0, 1, 2, 3, 26];
+const list_of_servers = [0, 1];
+const ECBC_table = handleInactiveServers(list_of_servers);
 
 // Create and return the ECBC table with above variables
 // input: only those ECBC_variables above
@@ -35,7 +41,14 @@ export function createECBCTable() {
     table.push(row);
   }
 
-  return table;
+  let rs = table.slice();
+  for (let i = 1; i < ECBC_count; i++) {
+    for (let j = 0; j < rs.length; j++) {
+      rs[j] = rs[j].concat(table[j]);
+    }
+  }
+
+  return rs;
 }
 
 // input: none
@@ -72,14 +85,26 @@ export function getECBCTableFS() {
   return table_fs;
 }
 
+// input: list of inactive servers
+// output: ECBC_table after remove the inactive servers
+// Usage: before upload/download files
+export function handleInactiveServers(servers) {
+  if (!Array.isArray(servers)) throw Error('handleInactiveServers(): invalid parameter');
+
+  let result_table = ECBC_table_origin.slice();
+  for (let index of servers)
+    result_table[index].fill(0);
+
+  return result_table;
+}
+
 // HopCroft - Karp Algorithm: return the list of files got from servers
 // input: list of files to get
 // output list of servers from which to get input files, in format list[] respectively to the list of files
 //  server[i] is the server to get file[i]
 // Usage: get the
 export function getFilesFromServers_HopCroft_Karp(files) {
-  const originalServers = getServerFileList(files);
-  const slen = originalServers.length;
+  const slen = ECBC_m;
   const copy_servers = copyServers(files);
   // console.log(`Copy_servers:`, copy_servers);
 
@@ -117,7 +142,8 @@ export function getServerFileList(files) {
 // input: list of files (mod ECBC_n)
 // output: number of copies
 export function findNumberOfCopy(serverfilelist) {
-  return Math.max(...serverfilelist.map((list) => list.length));
+  return ECBC_t;
+  // return Math.max(...serverfilelist.map((list) => list.length));
 }
 
 // input: list of files
@@ -244,4 +270,4 @@ class BipGraph {
   }
 }
 
-console.log(getFilesFromServers_HopCroft_Karp([0,2,18]));
+console.log(getFilesFromServers_HopCroft_Karp(list_of_files));

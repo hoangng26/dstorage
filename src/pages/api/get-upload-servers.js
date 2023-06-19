@@ -14,7 +14,7 @@ export default async function handler(req, res, next) {
     const { ECBC_m: m, ECBC_n: n, ECBC_t: t, ECBC_table } = await createECBCTable();
     const availablePosition = await getBlankPosition();
 
-    const table = ECBC_table.map((item) => item[(availablePosition >= 0 ? availablePosition : n) % (m * t)]);
+    const table = ECBC_table.map((item) => item[availablePosition >= 0 ? availablePosition : n]);
 
     const listServersSaveFiles = await getAllServers();
     const listServers = Object.values(listServersSaveFiles);

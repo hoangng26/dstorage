@@ -16,7 +16,7 @@ export default async function handler(req, res, next) {
   if (req.method === 'POST') {
     const requestServer = req.body.ipAddress;
 
-    if (checkNewServer(requestServer)) {
+    if (await checkNewServer(requestServer)) {
       return;
     }
 

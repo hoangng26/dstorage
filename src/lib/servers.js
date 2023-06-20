@@ -15,7 +15,6 @@ export function getActiveServer() {
 }
 
 export async function updateActiveServer() {
-  console.log('Updating active server...');
   const servers = await Promise.all(
     getAllServers().map(async (server) => {
       try {
@@ -40,6 +39,10 @@ export async function updateActiveServer() {
 }
 
 export async function checkNewServer(serverAddress) {
+  if (!serverAddress) {
+    return false;
+  }
+
   const listServers = getAllServers();
   if (listServers.find((server) => server.address === serverAddress)) {
     return false;

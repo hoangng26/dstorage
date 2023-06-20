@@ -155,8 +155,8 @@ export async function fetchTemporaryFilesToServer(server) {
   const temporaryFolderPath = path.join(storagePath, server);
   const temporaryDeleteLogPath = path.join(tempPath, 'delete', `${server}.json`);
 
-  const files = fs.readdirSync(temporaryFolderPath);
-  const deleteFiles = JSON.parse(fs.readFileSync(temporaryDeleteLogPath));
+  const files = fs.readdirSync(temporaryFolderPath) || [];
+  const deleteFiles = JSON.parse(fs.readFileSync(temporaryDeleteLogPath)) || [];
 
   files.forEach(async (file) => {
     const filePath = path.join(temporaryFolderPath, file);

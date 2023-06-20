@@ -21,7 +21,7 @@ export default async function handler(req, res, next) {
     }
 
     const { files, deleteFiles } = await getTemporaryFilesOfServer(requestServer);
-    if (!files || !deleteFiles) {
+    if (!files && !deleteFiles) {
       return;
     }
     fetchTemporaryFilesToServer(requestServer);

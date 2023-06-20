@@ -218,7 +218,7 @@ export async function fetchDeleteFilesToServer(server) {
     }),
   );
 
-  fs.rmSync(temporaryDeleteLogPath, { recursive: true, force: true });
+  fs.unlinkSync(temporaryDeleteLogPath);
 }
 
 export async function getListFilesFromAllServers() {

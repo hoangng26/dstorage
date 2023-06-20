@@ -43,7 +43,7 @@ export default async function handler(req, res, next) {
     );
 
     for (let file of tempDeleteFiles) {
-      saveDeleteLogFile(file.server, file.fileName);
+      await saveDeleteLogFile(file.server, file.fileName);
     }
 
     res.status(200).json({

@@ -143,7 +143,7 @@ export async function getStaticProps() {
   await updateActiveServer();
   const activeServers = getActiveServer().map((server) => server.address);
 
-  const { listFilesOnServers, listServersSaveFiles } = await getListFilesFromAllServers();
+  const { listFilesOnServers, listServersSaveFiles } = await getListFilesFromAllServers(true);
 
   return {
     props: {

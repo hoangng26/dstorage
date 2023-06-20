@@ -202,6 +202,7 @@ export async function getDeleteFilesOfServer(server) {
 
 export async function fetchDeleteFilesToServer(server) {
   const deleteFiles = await getDeleteFilesOfServer(server);
+  const temporaryDeleteLogPath = path.join(tempPath, 'delete', `${server}.json`);
 
   await Promise.all(
     deleteFiles.map(async (fileName) => {

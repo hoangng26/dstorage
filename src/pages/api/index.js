@@ -24,12 +24,12 @@ export default async function handler(req, res, next) {
 
     const temporaryFiles = await getTemporaryFilesOfServer(requestServer);
     if (temporaryFiles && temporaryFiles.length > 0) {
-      fetchTemporaryFilesToServer(requestServer);
+      await fetchTemporaryFilesToServer(requestServer);
     }
 
     const tempDeleteFiles = await getDeleteFilesOfServer(requestServer);
     if (tempDeleteFiles && tempDeleteFiles.length > 0) {
-      fetchDeleteFilesToServer(requestServer);
+      await fetchDeleteFilesToServer(requestServer);
     }
 
     await getFilesOnServer(requestServer);

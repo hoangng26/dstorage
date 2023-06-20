@@ -49,25 +49,29 @@ export default function UploadFile({ selectedServer, activeServers, onUpdateList
     data.append('file', fileUpload);
 
     await Promise.all(
-      listUploadServers.map(async (selectedServer) => {
-        if (activeServers.find((server) => server === selectedServer)) {
-          await axios
-            .post(`http://${selectedServer}/api/upload`, data)
-            .then((response) => {
-              console.log(response);
-            })
-            .catch((error) => {
-              console.error(error);
-            });
-        } else {
-          data.append('server', selectedServer);
+      listUploadServers.map(async (server) => {
+        try {
+          if (activeServers.find((server) => server === server)) {
+            throw new Error('Server is not active.');
+          } else {
+            await axios
+              .post(`http://${server}/api/upload`, data)
+              .then((response) => {
+                console.log(response);
+              })
+              .catch((error) => {
+                throw new Error(error);
+              });
+          }
+        } catch (error) {
+          data.append('server', server);
           await axios
             .post(`/api/upload`, data)
             .then((response) => {
               console.log(response);
             })
             .catch((error) => {
-              console.error(error);
+              throw new Error(error);
             });
         }
       }),
@@ -78,16 +82,20 @@ export default function UploadFile({ selectedServer, activeServers, onUpdateList
     const data = new FormData();
     data.append('file', fileUpload);
 
-    if (activeServers.find((server) => server === selectedServer)) {
-      await axios
-        .post(`http://${selectedServer}/api/upload`, data)
-        .then((response) => {
-          console.log(response);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    } else {
+    try {
+      if (activeServers.find((server) => server === selectedServer)) {
+        throw new Error('Server is not active.');
+      } else {
+        await axios
+          .post(`http://${selectedServer}/api/upload`, data)
+          .then((response) => {
+            console.log(response);
+          })
+          .catch((error) => {
+            throw new Error(error);
+          });
+      }
+    } catch (error) {
       data.append('server', selectedServer);
       await axios
         .post(`/api/upload`, data)
@@ -95,7 +103,7 @@ export default function UploadFile({ selectedServer, activeServers, onUpdateList
           console.log(response);
         })
         .catch((error) => {
-          console.error(error);
+          throw new Error(error);
         });
     }
   };

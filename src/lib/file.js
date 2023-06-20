@@ -2,7 +2,7 @@ import axios from 'axios';
 import FormData from 'form-data';
 import fs from 'fs';
 import path from 'path';
-import { getAllServers } from './servers';
+import { getActiveServer, getAllServers } from './servers';
 
 const storagePath = path.join(process.cwd(), 'storage');
 const tempPath = path.join(process.cwd(), 'temp');
@@ -221,8 +221,10 @@ export async function fetchDeleteFilesToServer(server) {
   fs.unlinkSync(temporaryDeleteLogPath);
 }
 
-export async function getListFilesFromAllServers() {
-  const servers = getAllServers().map((server) => server.address);
+export async function getListFilesFromAllServers(active = false) {
+  const listServers = active ? getActiveServer() : getAllServers();
+
+  const servers = listServers.map((server) => server.address);
   const listFilesOnServers = [];
   const listServersSaveFiles = {};
 

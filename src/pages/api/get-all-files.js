@@ -9,7 +9,7 @@ export default async function handler(req, res, next) {
   });
 
   try {
-    const { listFilesOnServers, listServersSaveFiles } = await getListFilesFromAllServers();
+    const { listFilesOnServers, listServersSaveFiles } = await getListFilesFromAllServers(true);
     res.status(200).json({
       listFiles: listFilesOnServers,
       listServers: listServersSaveFiles,

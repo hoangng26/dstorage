@@ -1,4 +1,10 @@
-import { fetchTemporaryFilesToServer, getTemporaryFilesOfServer } from '@/lib/file';
+import {
+  fetchDeleteFilesToServer,
+  fetchTemporaryFilesToServer,
+  getDeleteFilesOfServer,
+  getFilesOnServer,
+  getTemporaryFilesOfServer,
+} from '@/lib/file';
 import { checkNewServer } from '@/lib/servers';
 import NextCors from 'nextjs-cors';
 
@@ -20,10 +26,16 @@ export default async function handler(req, res, next) {
       return;
     }
 
-    const { files, deleteFiles } = await getTemporaryFilesOfServer(requestServer);
-    if (!files && !deleteFiles) {
-      return;
+    const temporaryFiles = await getTemporaryFilesOfServer(requestServer);
+    if (temporaryFiles && temporaryFiles.length > 0) {
+      fetchTemporaryFilesToServer(requestServer);
     }
-    fetchTemporaryFilesToServer(requestServer);
+
+    const tempDeleteFiles = await getDeleteFilesOfServer(requestServer);
+    if (tempDeleteFiles && tempDeleteFiles.length > 0) {
+      fetchDeleteFilesToServer(requestServer);
+    }
+
+    await getFilesOnServer(requestServer);
   }
 }

@@ -131,32 +131,19 @@ export async function saveDeleteLogFile(server, fileName) {
 
 export async function getTemporaryFilesOfServer(server) {
   const temporaryFolderPath = path.join(storagePath, server);
-  const temporaryDeleteLogPath = path.join(tempPath, 'delete', `${server}.json`);
-  const result = {};
 
   try {
     const files = fs.readdirSync(temporaryFolderPath);
-    result.files = files;
+    return files;
   } catch (error) {
-    result.files = null;
+    return null;
   }
-
-  try {
-    const data = JSON.parse(fs.readFileSync(temporaryDeleteLogPath));
-    result.deleteFiles = data;
-  } catch (error) {
-    result.deleteFiles = null;
-  }
-
-  return result;
 }
 
 export async function fetchTemporaryFilesToServer(server) {
   const temporaryFolderPath = path.join(storagePath, server);
-  const temporaryDeleteLogPath = path.join(tempPath, 'delete', `${server}.json`);
 
-  const files = fs.readdirSync(temporaryFolderPath) || [];
-  const deleteFiles = JSON.parse(fs.readFileSync(temporaryDeleteLogPath)) || [];
+  const files = fs.readdirSync(temporaryFolderPath);
 
   files.forEach(async (file) => {
     const filePath = path.join(temporaryFolderPath, file);
@@ -176,6 +163,23 @@ export async function fetchTemporaryFilesToServer(server) {
     fs.unlinkSync(filePath);
   });
 
+  fs.rmSync(temporaryFolderPath, { recursive: true, force: true });
+}
+
+export async function getDeleteFilesOfServer(server) {
+  const temporaryDeleteLogPath = path.join(tempPath, 'delete', `${server}.json`);
+
+  try {
+    const data = JSON.parse(fs.readFileSync(temporaryDeleteLogPath));
+    return data;
+  } catch (error) {
+    return null;
+  }
+}
+
+export async function fetchDeleteFilesToServer(server) {
+  const deleteFiles = await getDeleteFilesOfServer(server);
+
   deleteFiles.forEach(async (fileName) => {
     await axios
       .delete(`http://${server}/api/delete`, {
@@ -191,11 +195,7 @@ export async function fetchTemporaryFilesToServer(server) {
       });
   });
 
-  fs.rmSync(temporaryFolderPath, { recursive: true, force: true });
-
   fs.rmSync(temporaryDeleteLogPath, { recursive: true, force: true });
-
-  await getFilesOnServer(server);
 }
 
 export async function getListFilesFromAllServers() {

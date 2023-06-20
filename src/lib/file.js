@@ -151,7 +151,7 @@ export async function saveDeleteLogFile(server, fileName) {
 }
 
 export async function getTemporaryFilesOfServer(server) {
-  const temporaryFolderPath = path.join(storagePath, server);
+  const temporaryFolderPath = path.join(tempPath, 'storage', server);
 
   try {
     const files = fs.readdirSync(temporaryFolderPath);
@@ -162,27 +162,29 @@ export async function getTemporaryFilesOfServer(server) {
 }
 
 export async function fetchTemporaryFilesToServer(server) {
-  const temporaryFolderPath = path.join(storagePath, server);
+  const temporaryFolderPath = path.join(tempPath, 'storage', server);
 
   const files = fs.readdirSync(temporaryFolderPath);
 
-  files.forEach(async (file) => {
-    const filePath = path.join(temporaryFolderPath, file);
-    const fileRead = fs.readFileSync(filePath);
+  await Promise.all(
+    files.map(async (file) => {
+      const filePath = path.join(temporaryFolderPath, file);
+      const fileRead = fs.readFileSync(filePath);
 
-    const data = new FormData();
-    data.append('file', fileRead);
-    data.append('fileName', file);
+      const data = new FormData();
+      data.append('file', fileRead);
+      data.append('fileName', file);
 
-    await axios
-      .post(`http://${server}/api/upload`, data)
-      .then((response) => {})
-      .catch((error) => {
-        console.log(error);
-      });
+      await axios
+        .post(`http://${server}/api/upload`, data)
+        .then((response) => {})
+        .catch((error) => {
+          console.log(error);
+        });
 
-    fs.unlinkSync(filePath);
-  });
+      fs.unlinkSync(filePath);
+    }),
+  );
 
   fs.rmSync(temporaryFolderPath, { recursive: true, force: true });
 }

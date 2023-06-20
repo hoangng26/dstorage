@@ -189,6 +189,33 @@ export async function fetchTemporaryFilesToServer(server) {
   fs.rmSync(temporaryFolderPath, { recursive: true, force: true });
 }
 
+export async function deleteTemporaryFile(fileName) {
+  const temporaryFolderPath = path.join(tempPath, 'storage');
+  if (!fs.existsSync(temporaryFolderPath)) {
+    return;
+  }
+
+  const inactiveServers = fs.readdirSync(temporaryFolderPath);
+  if (!inactiveServers.length) {
+    return;
+  }
+
+  await Promise.all(
+    inactiveServers.map(async (server) => {
+      const folderPath = path.join(temporaryFolderPath, server);
+      const listFiles = fs.readdirSync(folderPath);
+      if (listFiles.includes(fileName)) {
+        fs.unlinkSync(path.join(folderPath, fileName));
+        listFiles.filter((file) => file !== fileName);
+      }
+
+      if (!listFiles.length) {
+        fs.rmSync(folderPath, { recursive: true, force: true });
+      }
+    }),
+  );
+}
+
 export async function getDeleteFilesOfServer(server) {
   const temporaryDeleteLogPath = path.join(tempPath, 'delete', `${server}.json`);
 
@@ -223,7 +250,7 @@ export async function fetchDeleteFilesToServer(server) {
 }
 
 export async function getListFilesFromAllServers(active = false) {
-  const listServers = active ? getActiveServer() : getAllServers();
+  const listServers = active ? await getActiveServer() : getAllServers();
 
   const servers = listServers.map((server) => server.address);
   const listFilesOnServers = [];

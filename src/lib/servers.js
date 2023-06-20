@@ -9,7 +9,8 @@ export function getAllServers() {
   return servers;
 }
 
-export function getActiveServer() {
+export async function getActiveServer() {
+  await updateActiveServer();
   const servers = getAllServers().filter((server) => server.active);
   return servers;
 }

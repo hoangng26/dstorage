@@ -1,4 +1,4 @@
-import { getListFilesFromAllServers, saveDeleteLogFile } from '@/lib/file';
+import { deleteTemporaryFile, getListFilesFromAllServers, saveDeleteLogFile } from '@/lib/file';
 import axios from 'axios';
 import NextCors from 'nextjs-cors';
 
@@ -41,6 +41,8 @@ export default async function handler(req, res, next) {
           });
       }),
     );
+
+    await deleteTemporaryFile(fileName);
 
     for (let file of tempDeleteFiles) {
       await saveDeleteLogFile(file.server, file.fileName);

@@ -5,7 +5,7 @@ import ListServers from '@/components/ListServers';
 import Navbar from '@/components/Navbar';
 import UploadFile from '@/components/UploadFile';
 import { getListFilesFromAllServers } from '@/lib/file';
-import { getActiveServer, getAllServers, updateActiveServer } from '@/lib/servers';
+import { getActiveServer, getAllServers } from '@/lib/servers';
 import { CloudUploadOutlined } from '@ant-design/icons';
 import { Layout, Result, Skeleton } from 'antd';
 import axios from 'axios';
@@ -148,8 +148,7 @@ export default function Home({ servers, activeServers, listServersSaveFiles, lis
 
 export async function getStaticProps() {
   const servers = getAllServers().map((server) => server.address);
-  await updateActiveServer();
-  const activeServers = getActiveServer().map((server) => server.address);
+  const activeServers = (await getActiveServer()).map((server) => server.address);
 
   const { listFilesOnServers, listServersSaveFiles } = await getListFilesFromAllServers(true);
 

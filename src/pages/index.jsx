@@ -93,25 +93,33 @@ export default function Home({ servers, activeServers, listServersSaveFiles, lis
                 }}
               />
 
-              {!fileLoading && !listFilesState.length && (
-                <Result
-                  icon={<CloudUploadOutlined />}
-                  title="Upload your files here! 👇"
-                  extra={
-                    <UploadFile
-                      activeServers={activeServers}
-                      selectedServer={selectedServer}
-                      onUpdateListFiles={handleUpdateListFiles}
-                    />
-                  }
-                />
+              {!fileLoading &&
+                !listFilesState.length &&
+                (!selectedServer || activeServers.includes(selectedServer)) && (
+                  <Result
+                    icon={<CloudUploadOutlined />}
+                    title="Upload your files here! 👇"
+                    extra={
+                      <UploadFile
+                        activeServers={activeServers}
+                        selectedServer={selectedServer}
+                        onUpdateListFiles={handleUpdateListFiles}
+                      />
+                    }
+                  />
+                )}
+
+              {selectedServer && !activeServers.includes(selectedServer) && (
+                <Result status="500" title="Inactive" subTitle="Sorry, server is inactive. Please come back later." />
               )}
 
               {!showAllFile && !fileLoading && (
                 <>
                   <ListFiles
                     server={[selectedServer]}
-                    listFiles={selectedServer ? listServersState[selectedServer] : []}
+                    listFiles={
+                      selectedServer && activeServers.includes(selectedServer) ? listServersState[selectedServer] : []
+                    }
                     onUpdateListFiles={handleUpdateListFiles}
                     selectedFiles={selectedFiles}
                     onUpdateSelectedFiles={handleUpdateSelectedFiles}

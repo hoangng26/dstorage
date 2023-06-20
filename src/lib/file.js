@@ -23,11 +23,6 @@ export function shortenName(fileName) {
   return fileName.replace(`${tokens[0]}_${tokens[1]}_`, '');
 }
 
-export async function findIndexOnLocal(filename) {
-  const listFiles = await readAllFilenames();
-  return listFiles.findIndex((file) => shortenName(file) === filename);
-}
-
 export async function findIndexOnAllServers(fileName) {
   const { listFilesOnServers: listFiles } = await getListFilesFromAllServers();
   const index = listFiles.findIndex((item) => shortenName(item.fileName) === fileName);
@@ -39,12 +34,14 @@ export async function findIndexOnAllServers(fileName) {
 
 export async function readAllFilenames(folder = '') {
   const fileStoragePath = path.join(storagePath, folder);
+
   try {
     const fileNames = fs.readdirSync(fileStoragePath);
     fileNames.sort((a, b) => compareFileNames(a, b));
     return fileNames;
   } catch (error) {
-    return null;
+    fs.mkdirSync(fileStoragePath, { recursive: true });
+    return [];
   }
 }
 

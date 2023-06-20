@@ -30,7 +30,7 @@ export async function findIndexOnLocal(filename) {
 
 export async function findIndexOnAllServers(fileName) {
   const { listFilesOnServers: listFiles } = await getListFilesFromAllServers();
-  return listFiles.findIndex((item) => shortenName(item.fileName) === fileName);
+  return listFiles.find((item) => shortenName(item.fileName) === fileName);
 }
 
 export async function readAllFilenames(folder = '') {
@@ -52,22 +52,43 @@ export function compareFileNames(fileName1, fileName2) {
 
 export async function saveUploadFile(file, server = '', fileName = '') {
   const data = fs.readFileSync(file.filepath);
-  const saveDirectory = path.join(storagePath, server);
+  const saveDirectory = path.join(storagePath);
   const availablePosition = await getBlankPosition();
 
   const checkIndex = await findIndexOnAllServers(file.originalFilename || fileName);
 
-  const normalFileName = `File_${(checkIndex >= 0 ? checkIndex : availablePosition) + 1}_${file.originalFilename}`;
+  const normalFileName = `File_${(checkIndex ? checkIndex.fileName.split('_')[1] : availablePosition) + 1}_${
+    file.originalFilename
+  }`;
 
   const saveFileName = fileName ? fileName : normalFileName;
+
+  if (server) {
+    await saveTempUploadFile(file, server, saveFileName);
+  } else {
+    try {
+      fs.readdirSync(saveDirectory);
+    } catch (error) {
+      fs.mkdirSync(saveDirectory);
+    }
+
+    fs.writeFileSync(`${saveDirectory}/${saveFileName}`, data);
+    fs.unlinkSync(file.filepath);
+  }
+  return;
+}
+
+export async function saveTempUploadFile(file, server, fileName) {
+  const data = fs.readFileSync(file.filepath);
+  const saveDirectory = path.join(tempPath, 'storage', server);
 
   try {
     fs.readdirSync(saveDirectory);
   } catch (error) {
-    fs.mkdirSync(saveDirectory);
+    fs.mkdirSync(saveDirectory, { recursive: true });
   }
 
-  fs.writeFileSync(`${saveDirectory}/${saveFileName}`, data);
+  fs.writeFileSync(`${saveDirectory}/${fileName}`, data);
   fs.unlinkSync(file.filepath);
   return;
 }
@@ -180,20 +201,22 @@ export async function getDeleteFilesOfServer(server) {
 export async function fetchDeleteFilesToServer(server) {
   const deleteFiles = await getDeleteFilesOfServer(server);
 
-  deleteFiles.forEach(async (fileName) => {
-    await axios
-      .delete(`http://${server}/api/delete`, {
-        data: {
-          fileName,
-        },
-      })
-      .then((response) => {
-        console.log(response);
-      })
-      .catch(async (error) => {
-        await saveDeleteLogFile(server, fileName);
-      });
-  });
+  await Promise.all(
+    deleteFiles.map(async (fileName) => {
+      await axios
+        .delete(`http://${server}/api/delete`, {
+          data: {
+            fileName,
+          },
+        })
+        .then((response) => {
+          console.log(response);
+        })
+        .catch(async (error) => {
+          await saveDeleteLogFile(server, fileName);
+        });
+    }),
+  );
 
   fs.rmSync(temporaryDeleteLogPath, { recursive: true, force: true });
 }

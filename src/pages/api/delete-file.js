@@ -25,6 +25,8 @@ export default async function handler(req, res, next) {
 
     const deleteServers = deleteFile.servers;
 
+    const tempDeleteFiles = [];
+
     await Promise.all(
       deleteServers.map(async (server) => {
         await axios
@@ -35,10 +37,14 @@ export default async function handler(req, res, next) {
           })
           .then((response) => {})
           .catch(async (error) => {
-            await saveDeleteLogFile(server, fileName);
+            tempDeleteFiles.push({ server, fileName });
           });
       }),
     );
+
+    for (let file of tempDeleteFiles) {
+      saveDeleteLogFile(file.server, file.fileName);
+    }
 
     res.status(200).json({
       message: `Deleted "${fileName}" from ${deleteServers.length} servers successfully.`,

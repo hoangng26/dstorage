@@ -15,10 +15,6 @@ export default async function handler(req, res, next) {
     optionsSuccessStatus: 200,
   });
 
-  res.status(200).json({
-    message: 'Server is running...',
-  });
-
   if (req.method === 'POST') {
     const requestServer = req.body.ipAddress;
 
@@ -38,4 +34,8 @@ export default async function handler(req, res, next) {
 
     await getFilesOnServer(requestServer);
   }
+
+  res.status(200).json({
+    message: 'Server is running...',
+  });
 }

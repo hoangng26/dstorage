@@ -20,7 +20,7 @@ export default async function handler(req, res, next) {
     const listIndex = await Promise.all(
       listFiles.map(async (fileName) => ({
         fileName,
-        index: await findIndexOnAllServers(shortenName(fileName)),
+        index: (await findIndexOnAllServers(shortenName(fileName))).index,
       })),
     );
 

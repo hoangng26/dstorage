@@ -30,7 +30,11 @@ export async function findIndexOnLocal(filename) {
 
 export async function findIndexOnAllServers(fileName) {
   const { listFilesOnServers: listFiles } = await getListFilesFromAllServers();
-  return listFiles.find((item) => shortenName(item.fileName) === fileName);
+  const index = listFiles.findIndex((item) => shortenName(item.fileName) === fileName);
+  return {
+    index,
+    files: listFiles[index],
+  };
 }
 
 export async function readAllFilenames(folder = '') {
@@ -55,7 +59,7 @@ export async function saveUploadFile(file, server = '', fileName = '') {
   const saveDirectory = path.join(storagePath);
   const availablePosition = await getBlankPosition();
 
-  const checkIndex = await findIndexOnAllServers(file.originalFilename || fileName);
+  const { files: checkIndex } = await findIndexOnAllServers(file.originalFilename || fileName);
 
   const normalFileName = `File_${checkIndex ? checkIndex.fileName.split('_')[1] : availablePosition + 1}_${
     file.originalFilename

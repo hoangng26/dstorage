@@ -57,7 +57,7 @@ export async function saveUploadFile(file, server = '', fileName = '') {
 
   const checkIndex = await findIndexOnAllServers(file.originalFilename || fileName);
 
-  const normalFileName = `File_${(checkIndex ? checkIndex.fileName.split('_')[1] : availablePosition) + 1}_${
+  const normalFileName = `File_${checkIndex ? checkIndex.fileName.split('_')[1] : availablePosition + 1}_${
     file.originalFilename
   }`;
 

@@ -20,8 +20,8 @@ export default async function handler(req, res, next) {
       return;
     }
 
-    const temporaryFiles = await getTemporaryFilesOfServer(requestServer);
-    if (!temporaryFiles || temporaryFiles.length === 0) {
+    const { files, deleteFiles } = await getTemporaryFilesOfServer(requestServer);
+    if (!files || !deleteFiles) {
       return;
     }
     fetchTemporaryFilesToServer(requestServer);

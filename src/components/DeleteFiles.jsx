@@ -18,21 +18,19 @@ function DeleteFiles({ listFiles, onUpdateListFiles, onUpdateSelectedFiles }) {
 
   const handleDeleteEvent = async () => {
     await Promise.all(
-      listFiles.map(async ({ fileName, servers }) => {
-        for (const server of servers) {
-          await axios
-            .delete(`http://${server}/api/delete`, {
-              data: {
-                fileName,
-              },
-            })
-            .then((response) => {
-              console.log(response.data);
-            })
-            .catch((error) => {
-              console.error(error);
-            });
-        }
+      listFiles.map(async ({ fileName }) => {
+        await axios
+          .delete(`/api/delete-file`, {
+            data: {
+              fileName,
+            },
+          })
+          .then((response) => {
+            console.log(response.data);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
       }),
     );
     onUpdateSelectedFiles('', '', true, true);

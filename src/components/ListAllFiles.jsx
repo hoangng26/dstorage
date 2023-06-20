@@ -9,21 +9,19 @@ export default function ListAllFiles({
   onUpdateListFiles,
   onUpdateSelectedFiles,
 }) {
-  const handleDeleteEvent = async (listServers, fileName) => {
-    for (const server of listServers) {
-      await axios
-        .delete(`http://${server}/api/delete`, {
-          data: {
-            fileName,
-          },
-        })
-        .then((response) => {
-          console.log(response.data);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    }
+  const handleDeleteEvent = async (fileName) => {
+    await axios
+      .delete(`/api/delete-file`, {
+        data: {
+          fileName,
+        },
+      })
+      .then((response) => {
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
     onUpdateListFiles();
   };
 

@@ -5,6 +5,7 @@ import path from 'path';
 import { getAllServers } from './servers';
 
 const storagePath = path.join(process.cwd(), 'storage');
+const tempPath = path.join(process.cwd(), 'temp');
 
 export async function getBlankPosition() {
   try {
@@ -56,9 +57,9 @@ export async function saveUploadFile(file, server = '', fileName = '') {
 
   const checkIndex = await findIndexOnAllServers(file.originalFilename || fileName);
 
-  const saveFileName = `File_${(checkIndex >= 0 ? checkIndex : availablePosition) + 1}_${
-    file.originalFilename || fileName
-  }`;
+  const normalFileName = `File_${(checkIndex >= 0 ? checkIndex : availablePosition) + 1}_${file.originalFilename}`;
+
+  const saveFileName = fileName ? fileName : normalFileName;
 
   try {
     fs.readdirSync(saveDirectory);
@@ -106,19 +107,56 @@ export async function getFilesOnServerStatic(server) {
   }
 }
 
+export async function saveDeleteLogFile(server, fileName) {
+  const deleteLogFolderPath = path.join(tempPath, 'delete');
+
+  if (!fs.existsSync(deleteLogFolderPath)) {
+    fs.mkdirSync(deleteLogFolderPath, { recursive: true });
+  }
+
+  const filePath = path.join(deleteLogFolderPath, `${server}.json`);
+  try {
+    const data = JSON.parse(fs.readFileSync(filePath));
+    data.push(fileName);
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), (err) => {
+      console.log(err);
+    });
+  } catch (error) {
+    const data = [fileName];
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), (err) => {
+      console.log(err);
+    });
+  }
+}
+
 export async function getTemporaryFilesOfServer(server) {
   const temporaryFolderPath = path.join(storagePath, server);
+  const temporaryDeleteLogPath = path.join(tempPath, 'delete', `${server}.json`);
+  const result = {};
+
   try {
     const files = fs.readdirSync(temporaryFolderPath);
-    return files;
+    result.files = files;
   } catch (error) {
-    return null;
+    result.files = null;
   }
+
+  try {
+    const data = JSON.parse(fs.readFileSync(temporaryDeleteLogPath));
+    result.deleteFiles = data;
+  } catch (error) {
+    result.deleteFiles = null;
+  }
+
+  return result;
 }
 
 export async function fetchTemporaryFilesToServer(server) {
   const temporaryFolderPath = path.join(storagePath, server);
+  const temporaryDeleteLogPath = path.join(tempPath, 'delete', `${server}.json`);
+
   const files = fs.readdirSync(temporaryFolderPath);
+  const deleteFiles = JSON.parse(fs.readFileSync(temporaryDeleteLogPath));
 
   files.forEach(async (file) => {
     const filePath = path.join(temporaryFolderPath, file);
@@ -138,7 +176,24 @@ export async function fetchTemporaryFilesToServer(server) {
     fs.unlinkSync(filePath);
   });
 
+  deleteFiles.forEach(async (fileName) => {
+    await axios
+      .delete(`http://${server}/api/delete`, {
+        data: {
+          fileName,
+        },
+      })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch(async (error) => {
+        await saveDeleteLogFile(server, fileName);
+      });
+  });
+
   fs.rmSync(temporaryFolderPath, { recursive: true, force: true });
+
+  fs.rmSync(temporaryDeleteLogPath, { recursive: true, force: true });
 
   await getFilesOnServer(server);
 }

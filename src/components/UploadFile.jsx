@@ -51,7 +51,7 @@ export default function UploadFile({ selectedServer, activeServers, onUpdateList
     await Promise.all(
       listUploadServers.map(async (server) => {
         try {
-          if (activeServers.find((server) => server === server)) {
+          if (!activeServers.find((server) => server === server)) {
             throw new Error('Server is not active.');
           } else {
             await axios
@@ -83,7 +83,7 @@ export default function UploadFile({ selectedServer, activeServers, onUpdateList
     data.append('file', fileUpload);
 
     try {
-      if (activeServers.find((server) => server === selectedServer)) {
+      if (!activeServers.find((server) => server === selectedServer)) {
         throw new Error('Server is not active.');
       } else {
         await axios

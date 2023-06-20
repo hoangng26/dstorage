@@ -214,9 +214,7 @@ export async function fetchDeleteFilesToServer(server) {
         .then((response) => {
           console.log(response);
         })
-        .catch(async (error) => {
-          await saveDeleteLogFile(server, fileName);
-        });
+        .catch(async (error) => {});
     }),
   );
 

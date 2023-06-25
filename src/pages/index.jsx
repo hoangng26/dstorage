@@ -94,8 +94,8 @@ export default function Home({ servers, activeServers, listServersSaveFiles, lis
               />
 
               {!fileLoading &&
-                !listFilesState.length &&
-                (!selectedServer || activeServers.includes(selectedServer)) && (
+                ((!selectedServer && !listFilesState.length) ||
+                  (activeServers.includes(selectedServer) && listServersState[selectedServer].length === 0)) && (
                   <Result
                     icon={<CloudUploadOutlined />}
                     title="Upload your files here! 👇"

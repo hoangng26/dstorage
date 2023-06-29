@@ -4,6 +4,8 @@ import { Button, Dropdown, Modal, notification } from 'antd';
 import FileIcon from './FileIcon';
 
 export default function File({ server, fileName, onDelete, downloadLink, selectedFiles, onUpdateSelectedFiles }) {
+  const renderedFilename = shortenName(fileName);
+
   const handleClickEvent = (e) => {
     e.preventDefault();
     onUpdateSelectedFiles(fileName, server, selectedFiles.findIndex((file) => file.fileName === fileName) >= 0);
@@ -17,7 +19,7 @@ export default function File({ server, fileName, onDelete, downloadLink, selecte
         <span>
           Are you sure you want to delete{' '}
           <a className="text-blue-500" href={downloadLink} target="_blank" rel="noopener noreferrer">
-            {fileName}
+            {renderedFilename}
           </a>
           ?
         </span>
@@ -39,7 +41,7 @@ export default function File({ server, fileName, onDelete, downloadLink, selecte
       icon: <DeleteOutlined className="text-red-500" />,
       description: (
         <span>
-          <span className="text-blue-500">{fileName}</span> was successfully deleted.
+          <span className="text-blue-500">{renderedFilename}</span> was successfully deleted.
         </span>
       ),
       duration: 3,
@@ -85,8 +87,7 @@ export default function File({ server, fileName, onDelete, downloadLink, selecte
         }`}
         icon={<FileIcon extension={fileName.split('.').pop()} />}
       >
-        {/* <span className="overflow-hidden text-ellipsis w-full text-left">{fileName}</span> */}
-        <span className="overflow-hidden text-ellipsis w-full text-left">{shortenName(fileName)}</span>
+        <span className="overflow-hidden text-ellipsis w-full text-left">{renderedFilename}</span>
       </Button>
     </Dropdown>
   );

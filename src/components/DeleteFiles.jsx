@@ -34,7 +34,7 @@ function DeleteFiles({ listFiles, onUpdateListFiles, onUpdateSelectedFiles }) {
       }),
     );
     onUpdateSelectedFiles('', '', true, true);
-    onUpdateListFiles();
+    await onUpdateListFiles();
 
     notification.open({
       message: 'Delete Files',

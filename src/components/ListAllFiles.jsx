@@ -9,7 +9,7 @@ export default function ListAllFiles({
   onUpdateListFiles,
   onUpdateSelectedFiles,
 }) {
-  const handleDeleteEvent = async (fileName) => {
+  const handleDeleteEvent = async (servers, fileName) => {
     await axios
       .delete(`/api/delete-file`, {
         data: {
@@ -22,7 +22,7 @@ export default function ListAllFiles({
       .catch((error) => {
         console.error(error);
       });
-    onUpdateListFiles();
+    await onUpdateListFiles();
   };
 
   function getDownloadLink(fileName, listServers) {

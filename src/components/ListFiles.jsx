@@ -16,7 +16,7 @@ export default function ListFiles({ server, listFiles, onUpdateListFiles, select
       .catch((error) => {
         console.error(error);
       });
-    onUpdateListFiles();
+    await onUpdateListFiles();
   };
 
   return (

@@ -37,7 +37,7 @@ export default function UploadFile({ selectedServer, activeServers, onUpdateList
       icon: <CloudUploadOutlined className="text-blue-500" />,
     });
 
-    onUpdateListFiles();
+    await onUpdateListFiles();
     setFilesUpload([]);
     setButtonLoading(false);
     setShowUpload(false);

@@ -1,3 +1,4 @@
+import { shortenName } from '@/lib/file';
 import { DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Modal, notification } from 'antd';
 import FileIcon from './FileIcon';
@@ -84,8 +85,8 @@ export default function File({ server, fileName, onDelete, downloadLink, selecte
         }`}
         icon={<FileIcon extension={fileName.split('.').pop()} />}
       >
-        <span className="overflow-hidden text-ellipsis w-full text-left">{fileName}</span>
-        {/* <span className="overflow-hidden text-ellipsis w-full text-left">{shortenName(fileName)}</span> */}
+        {/* <span className="overflow-hidden text-ellipsis w-full text-left">{fileName}</span> */}
+        <span className="overflow-hidden text-ellipsis w-full text-left">{shortenName(fileName)}</span>
       </Button>
     </Dropdown>
   );
